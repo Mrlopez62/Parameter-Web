@@ -1,0 +1,60 @@
+---
+// Illustrative product mockup: an automation run that pauses for a person's
+// approval. It shows the "people stay in control" principle, not a real metric.
+const steps = [
+  { time: "09:41", title: "New enquiry received", detail: "Web form · “Need a quote for Thursday”" },
+  { time: "09:41", title: "Details checked", detail: "Name, phone, address, service type" },
+  { time: "09:42", title: "Customer record updated", detail: "Matched existing contact in CRM" },
+  { time: "09:42", title: "Reply drafted", detail: "“Hi Sam, we can visit Thursday at 10am…”" },
+];
+---
+
+<div class="relative">
+  <div class="absolute -inset-6 -z-10 rounded-[2rem] bg-brand/15 blur-3xl" aria-hidden="true"></div>
+
+  <figure
+    class="overflow-hidden rounded-2xl bg-surface/90 shadow-2xl ring-1 shadow-black/50 ring-line backdrop-blur"
+    aria-label="Example: an automated enquiry workflow waiting for staff approval"
+  >
+    <div class="flex items-center justify-between border-b border-line px-5 py-3.5">
+      <div class="flex items-center gap-2.5">
+        <span class="size-2 animate-pulse-dot rounded-full bg-success"></span>
+        <span class="font-mono text-xs text-muted">lead-intake · run #1284</span>
+      </div>
+      <span class="font-mono text-[11px] text-subtle">LIVE</span>
+    </div>
+
+    <ol class="space-y-1 p-3">
+      {
+        steps.map((step) => (
+          <li class="flex gap-3 rounded-xl px-3 py-2.5">
+            <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-success/15 text-success">
+              <svg viewBox="0 0 16 16" class="size-3" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm text-fg">{step.title}</p>
+              <p class="truncate text-xs text-muted">{step.detail}</p>
+            </div>
+            <span class="font-mono text-[11px] text-subtle">{step.time}</span>
+          </li>
+        ))
+      }
+
+      <li class="flex gap-3 rounded-xl bg-brand/10 px-3 py-3 ring-1 ring-brand/40">
+        <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-warning/15">
+          <span class="size-1.5 animate-pulse-dot rounded-full bg-warning"></span>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm text-fg">Waiting for your approval</p>
+          <p class="text-xs text-muted">Nothing is sent until someone on your team says so.</p>
+          <div class="mt-3 flex gap-2" aria-hidden="true">
+            <span class="rounded-full bg-brand px-3 py-1 text-xs font-medium text-white">Approve &amp; send</span>
+            <span class="rounded-full bg-surface-2 px-3 py-1 text-xs text-muted ring-1 ring-line">Edit reply</span>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </figure>
+</div>

@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@import "@fontsource-variable/geist";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+
+/*
+ * Brand tokens from the Parameter logo system v2.0 ("Logo system-html/").
+ * Use `brand` for fills (buttons, the logo dot) and `brand-soft` for blue text
+ * on the dark background: plain brand blue on `bg` is under 4:1 contrast.
+ */
+@theme {
+  --color-ink: #0a0b0f;
+  --color-bg: #0a0b0f;
+  --color-surface: #13151b;
+  --color-surface-2: #1b1e26;
+  --color-line: #262a35;
+  --color-fg: #f7f8fa;
+  --color-muted: #a3a8b8;
+  --color-subtle: #8a8fa0;
+  --color-brand: #2d5bff;
+  --color-brand-hover: #1f43d1;
+  --color-brand-soft: #7d98ff;
+  --color-brand-tint: #dce4ff;
+  --color-success: #36bd79;
+  --color-warning: #f5b544;
+
+  --font-display: "Geist Variable", "Helvetica Neue", ui-sans-serif, sans-serif;
+  --font-sans: "Geist Variable", "Helvetica Neue", ui-sans-serif, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes pulse-dot {
+    50% {
+      opacity: 0.35;
+    }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    @apply bg-bg font-sans text-fg antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-[-0.04em] text-balance;
+  }
+
+  ::selection {
+    @apply bg-brand text-white;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-soft;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Soft brand-blue glow used behind hero and CTA sections. */
+  .glow {
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgb(45 91 255 / 0.22), transparent 70%),
+      radial-gradient(40% 40% at 85% 20%, rgb(125 152 255 / 0.08), transparent 70%);
+  }
+
+  /* Faint grid texture for section backgrounds. */
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+}
