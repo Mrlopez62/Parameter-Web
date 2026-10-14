@@ -1,0 +1,36 @@
+---
+import { site } from "../../data/site";
+import Button from "../Button.astro";
+import Container from "../Container.astro";
+import HeroPanel from "../HeroPanel.astro";
+---
+
+<section class="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+  <div class="glow absolute inset-0 -z-10" aria-hidden="true"></div>
+  <div class="grid-bg absolute inset-0 -z-10" aria-hidden="true"></div>
+
+  <Container class="grid items-center gap-14 lg:grid-cols-[1.1fr_1fr]">
+    <div>
+      <p class="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 font-mono text-xs text-muted ring-1 ring-line">
+        <span class="size-1.5 rounded-full bg-brand"></span>
+        Automation for small businesses
+      </p>
+
+      <h1 class="mt-6 text-4xl leading-[1.05] font-semibold sm:text-6xl">
+        <span class="text-brand-soft">Automate</span> the busywork. Keep the work that matters.
+      </h1>
+
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+        We design, build, and support practical automation that fits the way your business already works, with your
+        team in control at every step.
+      </p>
+
+      <div class="mt-9 flex flex-wrap gap-3">
+        <Button href={site.bookingHref}>Book a discovery call</Button>
+        <Button href="/#how-we-work" variant="secondary">See how we work</Button>
+      </div>
+    </div>
+
+    <HeroPanel />
+  </Container>
+</section>

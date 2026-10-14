@@ -1,0 +1,46 @@
+---
+/*
+ * Parameter logo, per the logo system v2.0: a value (dot) held in brackets.
+ * Size it with `font-size` via `class` (e.g. `text-[26px]`); the mark, gap, and
+ * wordmark scale from the lockup proportions in the logo system.
+ */
+interface Props {
+  variant?: "lockup" | "mark" | "wordmark";
+  /** Color of the brackets and wordmark. The dot is always brand blue unless `onBlue`. */
+  tone?: "light" | "dark";
+  /** For use on a brand-blue background: makes the dot white. */
+  onBlue?: boolean;
+  class?: string;
+  /** Accessible name. Pass "" when the logo sits inside an already-labelled link. */
+  label?: string;
+}
+
+const { variant = "lockup", tone = "light", onBlue = false, class: className, label = "Parameter" } = Astro.props;
+
+const ink = tone === "light" ? "#FFFFFF" : "#0A0B0F";
+const dot = onBlue ? "#FFFFFF" : "#2D5BFF";
+---
+
+<span
+  class:list={["inline-flex items-center gap-[0.26em] leading-none", className]}
+  role={label ? "img" : undefined}
+  aria-label={label || undefined}
+  aria-hidden={label ? undefined : "true"}
+>
+  {
+    variant !== "wordmark" && (
+      <svg viewBox="0 0 64 64" class="size-[0.95em] shrink-0" aria-hidden="true">
+        <path d="M22 10 H11 V54 H22" fill="none" stroke={ink} stroke-width="7" stroke-linejoin="round" stroke-linecap="round" />
+        <path d="M42 10 H53 V54 H42" fill="none" stroke={ink} stroke-width="7" stroke-linejoin="round" stroke-linecap="round" />
+        <circle cx="32" cy="32" r="8" fill={dot} />
+      </svg>
+    )
+  }
+  {
+    variant !== "mark" && (
+      <span class="pb-[0.13em] font-display font-semibold tracking-[-0.055em]" style={{ color: ink }} aria-hidden="true">
+        parameter
+      </span>
+    )
+  }
+</span>
