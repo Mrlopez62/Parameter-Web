@@ -1,40 +1,99 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ABSTRACT_ENDPOINT, classifyAbstractResponse, verifyMailbox } from "./mailbox-check";
+import {
+  classifyReputationResponse,
+  classifyValidationResponse,
+  PROVIDERS,
+  resetProviderCache,
+  verifyMailbox,
+} from "./mailbox-check";
 
-describe("classifyAbstractResponse", () => {
+const json = (body: unknown, status = 200) => Promise.resolve(new Response(JSON.stringify(body), { status }));
+const REPUTATION = PROVIDERS[0].endpoint;
+const VALIDATION = PROVIDERS[1].endpoint;
+
+describe("classifyReputationResponse (Email Reputation API)", () => {
+  it.each([
+    [{ email_deliverability: { status: "deliverable", status_detail: "valid_email" } }, "ok"],
+    [{ email_deliverability: { status: "undeliverable", status_detail: "invalid_mailbox" } }, "no-mailbox"],
+    [{ email_deliverability: { status: "undeliverable", status_detail: "dns_record_not_found" } }, "no-mailbox"],
+    [{ email_deliverability: { status: "undeliverable", status_detail: "invalid_format" } }, "no-mailbox"],
+    // A real person with a full inbox, or a server that may be down: allow.
+    [{ email_deliverability: { status: "undeliverable", status_detail: "full_mailbox" } }, "unknown"],
+    [{ email_deliverability: { status: "undeliverable", status_detail: "unavailable_server" } }, "unknown"],
+    [{ email_deliverability: { status: "unknown" } }, "unknown"],
+    [{}, "unknown"],
+    [{ email_deliverability: { status: "deliverable" }, email_quality: { is_disposable: true } }, "disposable"],
+  ] as const)("%j -> %s", (body, expected) => {
+    expect(classifyReputationResponse(body)).toBe(expected);
+  });
+});
+
+describe("classifyValidationResponse (older Email Validation API)", () => {
   it.each([
     [{ deliverability: "DELIVERABLE" }, "ok"],
     [{ deliverability: "UNDELIVERABLE" }, "no-mailbox"],
-    [{ deliverability: "RISKY" }, "unknown"], // e.g. catch-all domains: allow
+    [{ deliverability: "RISKY" }, "unknown"],
     [{ deliverability: "UNKNOWN" }, "unknown"],
     [{}, "unknown"],
     [{ deliverability: "DELIVERABLE", is_disposable_email: { value: true } }, "disposable"],
   ] as const)("%j -> %s", (body, expected) => {
-    expect(classifyAbstractResponse(body)).toBe(expected);
+    expect(classifyValidationResponse(body)).toBe(expected);
   });
 });
 
 describe("verifyMailbox", () => {
-  const ok = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
+  beforeEach(() => resetProviderCache());
+  const calledHost = (fetchImpl: ReturnType<typeof vi.fn>, i: number) =>
+    new URL((fetchImpl.mock.calls[i] as unknown as [string])[0]).origin + "/v1/";
 
-  it("calls Abstract with the key and address, and classifies the answer", async () => {
-    const fetchImpl = vi.fn(() => ok({ deliverability: "UNDELIVERABLE" }));
-    expect(await verifyMailbox("sam@example.com", "KEY", fetchImpl as unknown as typeof fetch)).toBe("no-mailbox");
-
+  it("uses the Email Reputation API with the key and address", async () => {
+    const fetchImpl = vi.fn(() =>
+      json({ email_deliverability: { status: "undeliverable", status_detail: "invalid_mailbox" } }),
+    );
+    expect(await verifyMailbox("sam@example.com", "KEY", { fetchImpl: fetchImpl as unknown as typeof fetch })).toBe(
+      "no-mailbox",
+    );
     const url = new URL((fetchImpl.mock.calls[0] as unknown as [string])[0]);
-    expect(url.origin + url.pathname).toBe(ABSTRACT_ENDPOINT);
+    expect(calledHost(fetchImpl, 0)).toBe(REPUTATION);
     expect(url.searchParams.get("api_key")).toBe("KEY");
     expect(url.searchParams.get("email")).toBe("sam@example.com");
   });
 
-  it.each([401, 422, 429, 500])("fails open on HTTP %i (bad key, quota, outage)", async (status) => {
-    const fetchImpl = () => Promise.resolve(new Response("", { status }));
-    expect(await verifyMailbox("sam@example.com", "KEY", fetchImpl as typeof fetch)).toBe("unknown");
+  it("falls back to the Email Validation API when the key is rejected, then remembers it", async () => {
+    const fetchImpl = vi.fn((url: string) =>
+      url.startsWith(REPUTATION) ? json({ error: {} }, 401) : json({ deliverability: "DELIVERABLE" }),
+    );
+    const opts = { fetchImpl: fetchImpl as unknown as typeof fetch };
+    expect(await verifyMailbox("a@example.com", "KEY", opts)).toBe("ok");
+    expect(fetchImpl.mock.calls.map((_, i) => calledHost(fetchImpl, i))).toEqual([REPUTATION, VALIDATION]);
+
+    expect(await verifyMailbox("b@example.com", "KEY", opts)).toBe("ok");
+    expect(calledHost(fetchImpl, 2)).toBe(VALIDATION); // no wasted Reputation call
   });
 
-  it("fails open on network errors and timeouts", async () => {
+  it("is unknown when neither API accepts the key", async () => {
+    const fetchImpl = () => json({ error: {} }, 401);
+    expect(await verifyMailbox("a@example.com", "BAD", { fetchImpl: fetchImpl as typeof fetch })).toBe("unknown");
+  });
+
+  it.each([403, 422, 429, 500])("fails open on HTTP %i (quota, rate limit, outage)", async (status) => {
+    const fetchImpl = vi.fn(() => json({}, status));
+    expect(await verifyMailbox("a@example.com", "KEY", { fetchImpl: fetchImpl as unknown as typeof fetch })).toBe(
+      "unknown",
+    );
+    expect(fetchImpl).toHaveBeenCalledTimes(1); // only a 401 tries the other API
+  });
+
+  it("fails open on network errors and timeouts, and logs without the key or address", async () => {
+    const logs: string[] = [];
     const fetchImpl = () => Promise.reject(new DOMException("timed out", "TimeoutError"));
-    expect(await verifyMailbox("sam@example.com", "KEY", fetchImpl as typeof fetch)).toBe("unknown");
+    const status = await verifyMailbox("sam@example.com", "SECRET", {
+      fetchImpl: fetchImpl as typeof fetch,
+      log: (m) => logs.push(m),
+    });
+    expect(status).toBe("unknown");
+    expect(logs.join(" ")).toContain("TimeoutError");
+    expect(logs.join(" ")).not.toMatch(/SECRET|sam@example\.com/);
   });
 });
 
@@ -49,7 +108,9 @@ describe("verify-mailbox function", () => {
     fetchSpy
       .mockReset()
       .mockImplementation(() =>
-        Promise.resolve(new Response(JSON.stringify({ deliverability: "DELIVERABLE" }), { status: 200 })),
+        Promise.resolve(
+          new Response(JSON.stringify({ email_deliverability: { status: "deliverable" } }), { status: 200 }),
+        ),
       );
     vi.stubGlobal("fetch", fetchSpy);
   });
