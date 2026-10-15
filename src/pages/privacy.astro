@@ -5,7 +5,7 @@ import { site } from "../data/site";
 
 // Draft policy. Review with the business owner (and ideally a lawyer) before
 // launch, and update `effective` whenever the content changes.
-const effective = "October 14, 2026";
+const effective = "October 15, 2026";
 ---
 
 <BaseLayout
@@ -46,6 +46,13 @@ const effective = "October 14, 2026";
         secure.
       </p>
       <p>
+        <strong>When you type your email address</strong>, the form checks it to catch typos and fake addresses. First
+        it confirms that your email's domain (the part after the @, such as example.com) can receive mail and isn't a
+        throwaway email service; only the domain is checked, on our own website's server. When you finish typing, your
+        full address may also be sent to our email verification provider, Abstract API, which checks that the mailbox
+        exists without sending it an email. It's used only for that check.
+      </p>
+      <p>
         We don't use advertising trackers or analytics cookies, and the site doesn't set cookies of its own. If you add
         a call to your calendar, that happens in your own calendar app; we don't receive anything back from it.
       </p>
@@ -70,6 +77,9 @@ const effective = "October 14, 2026";
         </li>
         <li>
           <strong>Email</strong>: our email provider stores the messages we send and receive.
+        </li>
+        <li>
+          <strong>Email verification</strong>: Abstract API checks that the email address you enter on our form exists.
         </li>
       </ul>
       <p>We may also disclose information if the law requires it, or to protect our rights or the safety of others.</p>
