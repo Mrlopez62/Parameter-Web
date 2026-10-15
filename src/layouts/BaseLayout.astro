@@ -7,12 +7,26 @@ import { site } from "../data/site";
 interface Props {
   title?: string;
   description?: string;
+  /** Keep this page out of search results (e.g. the 404 page). */
+  noindex?: boolean;
 }
 
-const { title, description = site.description } = Astro.props;
+const { title, description = site.description, noindex = false } = Astro.props;
 const pageTitle = title ? `${title} | ${site.name}` : `${site.name} | Practical automation for small businesses`;
 const canonical = new URL(Astro.url.pathname, site.url);
-const ogImage = new URL("/icon-512.png", site.url);
+const ogImage = new URL("/og.png", site.url);
+
+// Structured data so search engines can show the business name, logo, and contact.
+const organization = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: site.name,
+  url: site.url,
+  logo: new URL("/icon-512.png", site.url).href,
+  image: ogImage.href,
+  email: site.email,
+  description: site.description,
+};
 ---
 
 <!doctype html>
@@ -23,7 +37,8 @@ const ogImage = new URL("/icon-512.png", site.url);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="theme-color" content="#0a0b0f" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -36,7 +51,12 @@ const ogImage = new URL("/icon-512.png", site.url);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Parameter: Automate the busywork. Keep the work that matters." />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(organization)} />}
   </head>
   <body>
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-full focus:bg-brand focus:px-4 focus:py-2 focus:text-white">

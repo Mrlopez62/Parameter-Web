@@ -101,8 +101,12 @@ const label = "mb-2 block text-sm text-muted";
           >
             Request discovery call
           </button>
+          <p class="mt-3 text-center text-xs text-subtle">
+            We'll only use your details to respond to your request. See our{" "}
+            <a href="/privacy/" class="text-muted underline underline-offset-2 hover:text-fg">Privacy Policy</a>.
+          </p>
           <p class="mt-3 hidden text-sm text-warning" role="alert" data-form-error>
-            Something went wrong sending your request. Please email us at
+            Something went wrong sending your request. Please email us at{" "}
             <a href={`mailto:${site.email}`} class="underline">{site.email}</a>.
           </p>
         </div>
@@ -121,12 +125,14 @@ const label = "mb-2 block text-sm text-muted";
         </p>
 
         <p class="mt-8 font-mono text-xs tracking-[0.04em] text-subtle uppercase">Add it to your calendar</p>
-        <div class="mt-4 grid gap-2 sm:grid-cols-2">
+        <div class="mt-4 grid gap-2 sm:grid-cols-2" data-cal-links></div>
+        {/* Cloned in after submitting, once the links have real URLs (keeps href-less links out of the page). */}
+        <template data-cal-template>
           <a data-cal="google" target="_blank" rel="noopener" class="cal-btn">Google Calendar</a>
           <a data-cal="outlook" target="_blank" rel="noopener" class="cal-btn">Outlook.com</a>
           <a data-cal="office" target="_blank" rel="noopener" class="cal-btn">Outlook (Microsoft 365)</a>
           <a data-cal="ics" download="parameter-discovery-call.ics" class="cal-btn">Apple Calendar / other (.ics)</a>
-        </div>
+        </template>
       </div>
     </div>
   </Container>
@@ -216,14 +222,16 @@ const label = "mb-2 block text-sm text-muted";
       };
 
       success!.querySelector("[data-success-when]")!.textContent = when;
-      success!.querySelector<HTMLAnchorElement>('[data-cal="google"]')!.href = googleCalendarUrl(event);
-      success!.querySelector<HTMLAnchorElement>('[data-cal="outlook"]')!.href = outlookCalendarUrl(event);
-      success!.querySelector<HTMLAnchorElement>('[data-cal="office"]')!.href = outlookCalendarUrl(event, "outlook.office.com");
 
+      const links = success!.querySelector<HTMLTemplateElement>("[data-cal-template]")!.content.cloneNode(true) as DocumentFragment;
+      links.querySelector<HTMLAnchorElement>('[data-cal="google"]')!.href = googleCalendarUrl(event);
+      links.querySelector<HTMLAnchorElement>('[data-cal="outlook"]')!.href = outlookCalendarUrl(event);
+      links.querySelector<HTMLAnchorElement>('[data-cal="office"]')!.href = outlookCalendarUrl(event, "outlook.office.com");
       const ics = icsFile(event, `${start.getTime()}-${crypto.randomUUID()}@parameter.digital`);
-      success!.querySelector<HTMLAnchorElement>('[data-cal="ics"]')!.href = URL.createObjectURL(
+      links.querySelector<HTMLAnchorElement>('[data-cal="ics"]')!.href = URL.createObjectURL(
         new Blob([ics], { type: "text/calendar;charset=utf-8" }),
       );
+      success!.querySelector("[data-cal-links]")!.replaceChildren(links);
 
       form!.classList.add("hidden");
       success!.classList.remove("hidden");

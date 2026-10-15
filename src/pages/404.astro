@@ -1,0 +1,26 @@
+---
+import Button from "../components/Button.astro";
+import Container from "../components/Container.astro";
+import Logo from "../components/Logo.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Page not found" noindex>
+  <section class="relative overflow-hidden">
+    <div class="glow absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="grid-bg absolute inset-0 -z-10" aria-hidden="true"></div>
+
+    <Container class="flex min-h-[80vh] flex-col items-center justify-center pt-32 pb-24 text-center">
+      <Logo variant="mark" class="text-[80px]" label="" />
+
+      <p class="mt-8 font-mono text-xs tracking-[0.04em] text-brand-soft uppercase">Error 404</p>
+      <h1 class="mt-4 text-4xl font-semibold sm:text-6xl">This page doesn't exist.</h1>
+      <p class="mt-5 max-w-md text-lg text-muted">
+        The link may be broken, or the page may have moved. Let's get you back on track.
+      </p>
+      <div class="mt-9">
+        <Button href="/">Back to home</Button>
+      </div>
+    </Container>
+  </section>
+</BaseLayout>
