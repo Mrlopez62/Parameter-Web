@@ -25,22 +25,27 @@ const steps = [
     </div>
 
     <ol class="space-y-1 p-3">
-      {
-        steps.map((step) => (
-          <li class="flex gap-3 rounded-xl px-3 py-2.5">
-            <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-success/15 text-success">
-              <svg viewBox="0 0 16 16" class="size-3" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
-            <div class="min-w-0 flex-1">
-              <p class="text-sm text-fg">{step.title}</p>
-              <p class="truncate text-xs text-muted">{step.detail}</p>
-            </div>
-            <span class="font-mono text-[11px] text-subtle">{step.time}</span>
-          </li>
-        ))
-      }
+      {steps.map((step) => (
+        <li class="flex gap-3 rounded-xl px-3 py-2.5">
+          <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-success/15 text-success">
+            <svg
+              viewBox="0 0 16 16"
+              class="size-3"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm text-fg">{step.title}</p>
+            <p class="truncate text-xs text-muted">{step.detail}</p>
+          </div>
+          <span class="font-mono text-[11px] text-subtle">{step.time}</span>
+        </li>
+      ))}
 
       <li class="flex gap-3 rounded-xl bg-brand/10 px-3 py-3 ring-1 ring-brand/40">
         <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-warning/15">

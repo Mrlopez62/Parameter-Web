@@ -20,7 +20,10 @@ function query(params: Record<string, string>): string {
 
 /** 2026-10-14T15:30:00.000Z -> 20261014T153000Z */
 function toCompactUtc(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  return date
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
 }
 
 export function googleCalendarUrl(event: CalendarEvent): string {

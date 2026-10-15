@@ -33,7 +33,9 @@ const organization = {
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <script is:inline>document.documentElement.classList.add("js");</script>
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
@@ -59,7 +61,10 @@ const organization = {
     {!noindex && <script type="application/ld+json" set:html={JSON.stringify(organization)} />}
   </head>
   <body>
-    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-full focus:bg-brand focus:px-4 focus:py-2 focus:text-white">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-full focus:bg-brand focus:px-4 focus:py-2 focus:text-white"
+    >
       Skip to content
     </a>
     <Header />

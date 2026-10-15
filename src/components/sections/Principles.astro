@@ -33,19 +33,33 @@ const principles = [
     />
 
     <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {
-        principles.map((p) => (
-          <article class="rounded-2xl bg-bg p-6 ring-1 ring-line" data-reveal>
-            <svg viewBox="0 0 64 64" class="size-8" aria-hidden="true">
-              <path d="M22 10 H11 V54 H22" fill="none" stroke="currentColor" class="text-line" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" />
-              <path d="M42 10 H53 V54 H42" fill="none" stroke="currentColor" class="text-line" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" />
-              <circle cx="32" cy="32" r="8" class="fill-brand" />
-            </svg>
-            <h3 class="mt-5 text-lg font-semibold">{p.title}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted">{p.body}</p>
-          </article>
-        ))
-      }
+      {principles.map((p) => (
+        <article class="rounded-2xl bg-bg p-6 ring-1 ring-line" data-reveal>
+          <svg viewBox="0 0 64 64" class="size-8" aria-hidden="true">
+            <path
+              d="M22 10 H11 V54 H22"
+              fill="none"
+              stroke="currentColor"
+              class="text-line"
+              stroke-width="7"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+            <path
+              d="M42 10 H53 V54 H42"
+              fill="none"
+              stroke="currentColor"
+              class="text-line"
+              stroke-width="7"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+            <circle cx="32" cy="32" r="8" class="fill-brand" />
+          </svg>
+          <h3 class="mt-5 text-lg font-semibold">{p.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted">{p.body}</p>
+        </article>
+      ))}
     </div>
   </Container>
 </section>

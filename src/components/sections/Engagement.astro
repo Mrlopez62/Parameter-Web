@@ -54,17 +54,15 @@ const track = ["Talk", "Prove it works", "Keep improving"];
     <div class="engage mt-14" data-engage>
       {/* Progress track (desktop only): lights up 01 -> 02 -> 03 in step with the cards. */}
       <ol class="mb-6 hidden gap-5 lg:grid lg:grid-cols-[1.15fr_1fr_1fr]" aria-hidden="true">
-        {
-          track.map((label, i) => (
-            <li class="flex items-center gap-3" style={`--d:${i * STEP_MS}ms`}>
-              <span class="node grid size-3 shrink-0 place-items-center rounded-full bg-brand" />
-              <span class="font-mono text-xs whitespace-nowrap text-muted">
-                {String(i + 1).padStart(2, "0")} · {label}
-              </span>
-              {i < track.length - 1 && <span class="seg h-px flex-1 bg-gradient-to-r from-brand-soft to-line" />}
-            </li>
-          ))
-        }
+        {track.map((label, i) => (
+          <li class="flex items-center gap-3" style={`--d:${i * STEP_MS}ms`}>
+            <span class="node grid size-3 shrink-0 place-items-center rounded-full bg-brand" />
+            <span class="font-mono text-xs whitespace-nowrap text-muted">
+              {String(i + 1).padStart(2, "0")} · {label}
+            </span>
+            {i < track.length - 1 && <span class="seg h-px flex-1 bg-gradient-to-r from-brand-soft to-line" />}
+          </li>
+        ))}
       </ol>
 
       <div class="grid gap-5 lg:grid-cols-[1.15fr_1fr_1fr]">
@@ -78,42 +76,47 @@ const track = ["Talk", "Prove it works", "Keep improving"];
           <p class="free mt-6 text-5xl font-semibold tracking-[-0.04em]">Free</p>
           <p class="mt-2 text-sm text-muted">30 minutes. No obligation.</p>
           <ul class="mt-7 space-y-3 text-sm">
-            {
-              discoveryPoints.map((point, i) => (
-                <li class="item flex gap-3" style={`--i:${i}`}>
-                  <span class="dot mt-1.5 size-1.5 shrink-0 rounded-full bg-brand" />
-                  {point}
-                </li>
-              ))
-            }
+            {discoveryPoints.map((point, i) => (
+              <li class="item flex gap-3" style={`--i:${i}`}>
+                <span class="dot mt-1.5 size-1.5 shrink-0 rounded-full bg-brand" />
+                {point}
+              </li>
+            ))}
           </ul>
           <div class="mt-auto pt-9">
-            <Button href={site.bookingHref} class="w-full">Book a free discovery call</Button>
+            <Button href={site.bookingHref} class="w-full">
+              Book a free discovery call
+            </Button>
           </div>
         </article>
 
-        {
-          paidSteps.map((item, s) => (
-            <article
-              class="card flex flex-col rounded-2xl bg-surface p-7 ring-1 ring-line sm:p-8"
-              style={`--d:${(s + 1) * STEP_MS}ms`}
-            >
-              <p class="font-mono text-xs text-subtle">{item.step}</p>
-              <h3 class="mt-3 text-xl font-semibold">{item.name}</h3>
-              <p class="mt-2 text-sm text-muted">{item.tagline}</p>
-              <ul class="mt-7 space-y-3 text-sm text-fg">
-                {item.points.map((point, i) => (
-                  <li class="item flex gap-3" style={`--i:${i}`}>
-                    <svg viewBox="0 0 16 16" class="check mt-0.5 size-4 shrink-0 text-success" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                      <path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    {point}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))
-        }
+        {paidSteps.map((item, s) => (
+          <article
+            class="card flex flex-col rounded-2xl bg-surface p-7 ring-1 ring-line sm:p-8"
+            style={`--d:${(s + 1) * STEP_MS}ms`}
+          >
+            <p class="font-mono text-xs text-subtle">{item.step}</p>
+            <h3 class="mt-3 text-xl font-semibold">{item.name}</h3>
+            <p class="mt-2 text-sm text-muted">{item.tagline}</p>
+            <ul class="mt-7 space-y-3 text-sm text-fg">
+              {item.points.map((point, i) => (
+                <li class="item flex gap-3" style={`--i:${i}`}>
+                  <svg
+                    viewBox="0 0 16 16"
+                    class="check mt-0.5 size-4 shrink-0 text-success"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
       </div>
     </div>
 
@@ -145,7 +148,8 @@ const track = ["Talk", "Prove it works", "Keep improving"];
 
   /* "Free" is drawn as gradient text; its resting position is plain white. */
   .free {
-    background: linear-gradient(100deg, var(--color-fg) 40%, var(--color-brand-soft) 50%, var(--color-fg) 60%) 0 0 / 250% 100%;
+    background: linear-gradient(100deg, var(--color-fg) 40%, var(--color-brand-soft) 50%, var(--color-fg) 60%) 0 0 /
+      250% 100%;
     background-clip: text;
     color: transparent;
   }

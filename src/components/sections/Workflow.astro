@@ -60,7 +60,8 @@ function relativeLuminance(hex: string) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 const BG_LUMINANCE = relativeLuminance("0a0b0f");
-const logoColor = (hex: string) => ((relativeLuminance(hex) + 0.05) / (BG_LUMINANCE + 0.05) >= 3 ? `#${hex}` : "#f7f8fa");
+const logoColor = (hex: string) =>
+  (relativeLuminance(hex) + 0.05) / (BG_LUMINANCE + 0.05) >= 3 ? `#${hex}` : "#f7f8fa";
 ---
 
 <section id="workflow" class="scroll-mt-20 py-24 sm:py-32">
@@ -72,25 +73,32 @@ const logoColor = (hex: string) => ((relativeLuminance(hex) + 0.05) / (BG_LUMINA
     />
 
     <ol class="mt-14 grid gap-4 md:grid-cols-5">
-      {
-        steps.map((step, i) => (
-          <li class="flex" data-reveal>
-            {/* Hover styles live on this inner card so they don't fight the reveal transform. */}
-            <div class:list={["step group relative flex w-full flex-col overflow-hidden rounded-2xl bg-surface p-5 ring-1 ring-line", step.human ? "step-team" : "step-auto"]}>
-              <div class="flex items-center justify-between">
-                <span class="step-num font-mono text-xs text-subtle transition-colors">{String(i + 1).padStart(2, "0")}</span>
-                {step.human ? (
-                  <span class="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">Your team</span>
-                ) : (
-                  <span class="rounded-full bg-brand/15 px-2 py-0.5 text-[11px] text-brand-soft">Automated</span>
-                )}
-              </div>
-              <h3 class="mt-4 font-semibold">{step.title}</h3>
-              <p class="mt-1.5 text-sm leading-relaxed text-muted transition-colors group-hover:text-fg/80">{step.body}</p>
+      {steps.map((step, i) => (
+        <li class="flex" data-reveal>
+          {/* Hover styles live on this inner card so they don't fight the reveal transform. */}
+          <div
+            class:list={[
+              "step group relative flex w-full flex-col overflow-hidden rounded-2xl bg-surface p-5 ring-1 ring-line",
+              step.human ? "step-team" : "step-auto",
+            ]}
+          >
+            <div class="flex items-center justify-between">
+              <span class="step-num font-mono text-xs text-subtle transition-colors">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              {step.human ? (
+                <span class="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">Your team</span>
+              ) : (
+                <span class="rounded-full bg-brand/15 px-2 py-0.5 text-[11px] text-brand-soft">Automated</span>
+              )}
             </div>
-          </li>
-        ))
-      }
+            <h3 class="mt-4 font-semibold">{step.title}</h3>
+            <p class="mt-1.5 text-sm leading-relaxed text-muted transition-colors group-hover:text-fg/80">
+              {step.body}
+            </p>
+          </div>
+        </li>
+      ))}
     </ol>
 
     <div class="mt-16 rounded-2xl bg-surface/60 p-6 ring-1 ring-line sm:p-8" data-reveal>
@@ -99,23 +107,19 @@ const logoColor = (hex: string) => ((relativeLuminance(hex) + 0.05) / (BG_LUMINA
         <p class="text-sm text-muted">Don't see yours? Ask us on the discovery call.</p>
       </div>
       <ul class="mt-6 flex flex-wrap gap-2">
-        {
-          tools.map((tool) => (
-            <li
-              class="tool flex items-center gap-2.5 rounded-xl bg-bg px-3.5 py-3 ring-1 ring-line transition"
-              style={`--tool: #${tool.hex}`}
-            >
-              <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill={logoColor(tool.hex)} aria-hidden="true">
-                <path d={tool.path} />
-              </svg>
-              <span class="text-sm whitespace-nowrap text-fg">{displayName[tool.title] ?? tool.title}</span>
-            </li>
-          ))
-        }
+        {tools.map((tool) => (
+          <li
+            class="tool flex items-center gap-2.5 rounded-xl bg-bg px-3.5 py-3 ring-1 ring-line transition"
+            style={`--tool: #${tool.hex}`}
+          >
+            <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill={logoColor(tool.hex)} aria-hidden="true">
+              <path d={tool.path} />
+            </svg>
+            <span class="text-sm whitespace-nowrap text-fg">{displayName[tool.title] ?? tool.title}</span>
+          </li>
+        ))}
       </ul>
-      <p class="mt-5 text-sm text-muted">
-        Also {moreTools.join(", ")}, and more.
-      </p>
+      <p class="mt-5 text-sm text-muted">Also {moreTools.join(", ")}, and more.</p>
       <p class="mt-6 text-xs text-subtle">
         Product names and logos are trademarks of their respective owners, shown to indicate compatibility. No
         endorsement or partnership is implied.
@@ -151,7 +155,11 @@ const logoColor = (hex: string) => ((relativeLuminance(hex) + 0.05) / (BG_LUMINA
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%);
+    background: radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 60%
+    );
     opacity: 0;
     transition: opacity 0.35s ease;
   }
