@@ -56,7 +56,7 @@ export default async (req: Request, context: Context) => {
   if (cached) return reply(cached);
   if (overLimit(context.ip)) return reply("unknown"); // Fail open: don't block real people.
 
-  const status = await verifyMailbox(email, apiKey);
+  const status = await verifyMailbox(email, apiKey, { log: (m) => console.log(m) });
   if (status !== "unknown") results.set(email, status);
   return reply(status);
 };
