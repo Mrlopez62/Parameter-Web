@@ -6,13 +6,38 @@ Built with [Astro](https://astro.build) and Tailwind CSS v4. Layout inspired by 
 
 ## Commands
 
-| Command           | Action                                  |
-| ----------------- | --------------------------------------- |
-| `npm install`     | Install dependencies                    |
-| `npm run dev`     | Start the dev server at `localhost:4321` |
-| `npm run build`   | Build the static site to `dist/`        |
-| `npm run preview` | Preview the production build locally    |
-| `npx astro check` | Type-check `.astro` and `.ts` files     |
+Use Node 24 (see `.nvmrc`).
+
+| Command                | Action                                                       |
+| ---------------------- | ------------------------------------------------------------ |
+| `npm install`          | Install dependencies                                         |
+| `npm run dev`          | Start the dev server at `localhost:4321`                     |
+| `npm run build`        | Build the static site to `dist/`                             |
+| `npm run preview`      | Preview the production build locally                         |
+| `npm run lint`         | Lint with ESLint (JS, TS, Astro)                             |
+| `npm run format`       | Format everything with Prettier (sorts Tailwind classes)     |
+| `npm run format:check` | Check formatting without changing files                      |
+| `npm run typecheck`    | Type-check `.astro` and `.ts` files (`astro check`)          |
+| `npm test`             | Run unit tests (Vitest)                                      |
+| `npm run test:e2e`     | Run end-to-end tests (Playwright) against a production build |
+| `npm run check`        | Lint, format check, type-check, and unit tests in one go     |
+
+## Testing
+
+- **Unit tests** live next to the code as `*.test.ts` (e.g. `src/lib/calendar.test.ts`) and run with Vitest.
+- **End-to-end tests** live in `e2e/` and run with Playwright in a desktop and a mobile (Pixel 7) Chromium viewport.
+  Playwright builds the site and serves it with `astro preview`. They cover the contact form and date picker (with a
+  fixed date and time zone, and the Netlify submission intercepted), the 404 and privacy pages, metadata, animations,
+  and an axe WCAG 2.1 AA accessibility scan of each page.
+- First run only: `npx playwright install chromium` to download the test browser.
+
+## CI/CD
+
+- **CI** (`.github/workflows/ci.yml`) runs on every push to `main`/`dev` and on every pull request: lint, format check,
+  type-check, unit tests, and build in one job; end-to-end tests in another. The Playwright report is uploaded as an
+  artifact when e2e tests fail.
+- **CD** is Netlify (`netlify.toml`): `main` deploys to production, and every pull request gets a deploy preview. Protect
+  `main` in GitHub (Settings → Branches) and require the two CI checks, so only passing code reaches production.
 
 ## Structure
 
