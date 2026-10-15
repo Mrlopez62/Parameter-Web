@@ -35,18 +35,16 @@ const phrases = [
   <div class="mt-20 border-y border-line bg-bg/60 py-5 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
     <p class="sr-only">{phrases.join(". ")}.</p>
     <div class="flex w-max animate-marquee hover:[animation-play-state:paused]" aria-hidden="true">
-      {
-        [0, 1].map(() => (
-          <ul class="flex shrink-0">
-            {phrases.map((phrase) => (
-              <li class="flex items-center gap-4 pr-10 font-mono text-sm whitespace-nowrap text-muted">
-                <span class="size-1.5 rounded-full bg-brand" />
-                {phrase}
-              </li>
-            ))}
-          </ul>
-        ))
-      }
+      {[0, 1].map(() => (
+        <ul class="flex shrink-0">
+          {phrases.map((phrase) => (
+            <li class="flex items-center gap-4 pr-10 font-mono text-sm whitespace-nowrap text-muted">
+              <span class="size-1.5 rounded-full bg-brand" />
+              {phrase}
+            </li>
+          ))}
+        </ul>
+      ))}
     </div>
   </div>
 </section>

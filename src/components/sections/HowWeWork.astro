@@ -9,7 +9,11 @@ const rawLines = [
   { code: `<span class="text-subtle">// Runs on every new enquiry</span>` },
   { code: `${kw("const")} lead = ${kw("await")} intake.${fn("capture")}(enquiry)` },
   { code: `${kw("await")} crm.${fn("upsert")}(lead)`, status: "✓ record updated", tone: "text-success" },
-  { code: `${kw("const")} reply = ${kw("await")} drafts.${fn("reply")}(lead)`, status: "✓ draft ready", tone: "text-success" },
+  {
+    code: `${kw("const")} reply = ${kw("await")} drafts.${fn("reply")}(lead)`,
+    status: "✓ draft ready",
+    tone: "text-success",
+  },
   { code: `${kw("await")} team.${fn("review")}(reply)`, status: "⏸ waiting for office manager", tone: "text-warning" },
 ];
 
@@ -47,24 +51,19 @@ const steps = [
 <section id="how-we-work" class="scroll-mt-20 border-y border-line bg-surface/40 py-24 sm:py-32">
   <Container class="grid items-center gap-14 lg:grid-cols-2">
     <div>
-      <SectionHeader
-        eyebrow="How we work"
-        title="From busywork to measured results in three steps."
-      />
+      <SectionHeader eyebrow="How we work" title="From busywork to measured results in three steps." />
       <ol class="mt-10 space-y-8">
-        {
-          steps.map((step, i) => (
-            <li class="flex gap-5" data-reveal>
-              <span class="grid size-10 shrink-0 place-items-center rounded-full bg-brand/15 font-mono text-sm text-brand-soft ring-1 ring-brand/40">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <h3 class="text-lg font-semibold">{step.title}</h3>
-                <p class="mt-1.5 leading-relaxed text-muted">{step.body}</p>
-              </div>
-            </li>
-          ))
-        }
+        {steps.map((step, i) => (
+          <li class="flex gap-5" data-reveal>
+            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-brand/15 font-mono text-sm text-brand-soft ring-1 ring-brand/40">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <div>
+              <h3 class="text-lg font-semibold">{step.title}</h3>
+              <p class="mt-1.5 leading-relaxed text-muted">{step.body}</p>
+            </div>
+          </li>
+        ))}
       </ol>
     </div>
 
@@ -83,14 +82,12 @@ const steps = [
         <span class="ml-3 font-mono text-xs text-muted">lead-intake.ts</span>
       </div>
       <div class="space-y-1.5 p-5 font-mono text-[12px] leading-6 text-muted sm:text-[13px]">
-        {
-          codeLines.map((line) => (
-            <p class="flex flex-wrap items-baseline justify-between gap-x-4" style={line.style}>
-              <code class="type" set:html={line.code} />
-              {line.status && <span class:list={["status pl-4 sm:pl-0", line.tone]}>{line.status}</span>}
-            </p>
-          ))
-        }
+        {codeLines.map((line) => (
+          <p class="flex flex-wrap items-baseline justify-between gap-x-4" style={line.style}>
+            <code class="type" set:html={line.code} />
+            {line.status && <span class:list={["status pl-4 sm:pl-0", line.tone]}>{line.status}</span>}
+          </p>
+        ))}
         <p class="end-caret h-6" aria-hidden="true"></p>
       </div>
       <div class="note flex items-center gap-2 border-t border-line px-5 py-3 text-xs text-muted">

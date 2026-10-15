@@ -18,26 +18,30 @@ const year = new Date().getFullYear();
     <div>
       <h2 class="font-mono text-xs tracking-[0.04em] text-subtle uppercase">Explore</h2>
       <ul class="mt-4 space-y-2 text-sm">
-        {
-          navLinks.map((link) => (
-            <li>
-              <a href={link.href} class="text-muted hover:text-fg">
-                {link.label}
-              </a>
-            </li>
-          ))
-        }
+        {navLinks.map((link) => (
+          <li>
+            <a href={link.href} class="text-muted hover:text-fg">
+              {link.label}
+            </a>
+          </li>
+        ))}
       </ul>
     </div>
 
     <div>
       <h2 class="font-mono text-xs tracking-[0.04em] text-subtle uppercase">Contact</h2>
-      <a href={`mailto:${site.email}`} class="mt-4 block text-sm text-muted hover:text-fg">{site.email}</a>
+      <a href={`mailto:${site.email}`} class="mt-4 block text-sm text-muted hover:text-fg">
+        {site.email}
+      </a>
     </div>
   </Container>
 
   <Container class="flex flex-col gap-2 border-t border-line py-6 text-xs text-subtle sm:flex-row sm:justify-between">
-    <p>&copy; {year} {site.name}. All rights reserved.</p>
-    <a href="/privacy/" class="hover:text-fg">Privacy Policy</a>
+    <p>
+      &copy; {year} {site.name}. All rights reserved.
+    </p>
+    <a href="/privacy/" class="hover:text-fg">
+      Privacy Policy
+    </a>
   </Container>
 </footer>

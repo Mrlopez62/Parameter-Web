@@ -33,18 +33,19 @@ const label = "mb-2 block text-sm text-muted";
       </p>
 
       <ol class="mt-10 space-y-5">
-        {
-          steps.map((step, i) => (
-            <li class="flex gap-4">
-              <span class="font-mono text-sm text-subtle">{String(i + 1).padStart(2, "0")}</span>
-              <span class="text-fg">{step}</span>
-            </li>
-          ))
-        }
+        {steps.map((step, i) => (
+          <li class="flex gap-4">
+            <span class="font-mono text-sm text-subtle">{String(i + 1).padStart(2, "0")}</span>
+            <span class="text-fg">{step}</span>
+          </li>
+        ))}
       </ol>
 
       <p class="mt-10 text-sm text-muted">
-        Prefer email? <a href={`mailto:${site.email}`} class="text-brand-soft hover:underline">{site.email}</a>
+        Prefer email?{" "}
+        <a href={`mailto:${site.email}`} class="text-brand-soft hover:underline">
+          {site.email}
+        </a>
       </p>
     </div>
 
@@ -61,34 +62,47 @@ const label = "mb-2 block text-sm text-muted";
         <input type="hidden" name="timezone" />
         <input type="hidden" name="requested_time" />
         <p class="hidden" aria-hidden="true">
-          <label>Leave this empty <input name="company_website" tabindex="-1" autocomplete="off" /></label>
+          <label>
+            Leave this empty <input name="company_website" tabindex="-1" autocomplete="off" />
+          </label>
         </p>
 
         <div>
-          <label for="cf-name" class={label}>Name</label>
+          <label for="cf-name" class={label}>
+            Name
+          </label>
           <input id="cf-name" name="name" required autocomplete="name" class={field} />
         </div>
         <div>
-          <label for="cf-email" class={label}>Email</label>
+          <label for="cf-email" class={label}>
+            Email
+          </label>
           <input id="cf-email" name="email" type="email" required autocomplete="email" class={field} />
         </div>
         <div>
-          <label for="cf-business" class={label}>Business name</label>
+          <label for="cf-business" class={label}>
+            Business name
+          </label>
           <input id="cf-business" name="business" required autocomplete="organization" class={field} />
         </div>
         <div>
-          <label for="cf-phone" class={label}>Phone <span class="text-subtle">(optional)</span></label>
+          <label for="cf-phone" class={label}>
+            Phone <span class="text-subtle">(optional)</span>
+          </label>
           <input id="cf-phone" name="phone" type="tel" autocomplete="tel" class={field} />
         </div>
         <div class="sm:col-span-2">
-          <label for="cf-message" class={label}>What would you like to automate?</label>
+          <label for="cf-message" class={label}>
+            What would you like to automate?
+          </label>
           <textarea
             id="cf-message"
             name="message"
             rows="4"
             required
             placeholder="e.g. We spend hours each week copying web enquiries into our CRM and chasing quotes."
-            class={field}></textarea>
+            class={field}
+          ></textarea>
         </div>
         <div class="sm:col-span-2">
           <DateTimePicker id="cf-when" label="Preferred date and time" slots={timeSlots} />
@@ -103,11 +117,17 @@ const label = "mb-2 block text-sm text-muted";
           </button>
           <p class="mt-3 text-center text-xs text-subtle">
             We'll only use your details to respond to your request. See our{" "}
-            <a href="/privacy/" class="text-muted underline underline-offset-2 hover:text-fg">Privacy Policy</a>.
+            <a href="/privacy/" class="text-muted underline underline-offset-2 hover:text-fg">
+              Privacy Policy
+            </a>
+            .
           </p>
           <p class="mt-3 hidden text-sm text-warning" role="alert" data-form-error>
             Something went wrong sending your request. Please email us at{" "}
-            <a href={`mailto:${site.email}`} class="underline">{site.email}</a>.
+            <a href={`mailto:${site.email}`} class="underline">
+              {site.email}
+            </a>
+            .
           </p>
         </div>
       </form>
@@ -128,10 +148,18 @@ const label = "mb-2 block text-sm text-muted";
         <div class="mt-4 grid gap-2 sm:grid-cols-2" data-cal-links></div>
         {/* Cloned in after submitting, once the links have real URLs (keeps href-less links out of the page). */}
         <template data-cal-template>
-          <a data-cal="google" target="_blank" rel="noopener" class="cal-btn">Google Calendar</a>
-          <a data-cal="outlook" target="_blank" rel="noopener" class="cal-btn">Outlook.com</a>
-          <a data-cal="office" target="_blank" rel="noopener" class="cal-btn">Outlook (Microsoft 365)</a>
-          <a data-cal="ics" download="parameter-discovery-call.ics" class="cal-btn">Apple Calendar / other (.ics)</a>
+          <a data-cal="google" target="_blank" rel="noopener" class="cal-btn">
+            Google Calendar
+          </a>
+          <a data-cal="outlook" target="_blank" rel="noopener" class="cal-btn">
+            Outlook.com
+          </a>
+          <a data-cal="office" target="_blank" rel="noopener" class="cal-btn">
+            Outlook (Microsoft 365)
+          </a>
+          <a data-cal="ics" download="parameter-discovery-call.ics" class="cal-btn">
+            Apple Calendar / other (.ics)
+          </a>
         </template>
       </div>
     </div>
@@ -223,10 +251,15 @@ const label = "mb-2 block text-sm text-muted";
 
       success!.querySelector("[data-success-when]")!.textContent = when;
 
-      const links = success!.querySelector<HTMLTemplateElement>("[data-cal-template]")!.content.cloneNode(true) as DocumentFragment;
+      const links = success!
+        .querySelector<HTMLTemplateElement>("[data-cal-template]")!
+        .content.cloneNode(true) as DocumentFragment;
       links.querySelector<HTMLAnchorElement>('[data-cal="google"]')!.href = googleCalendarUrl(event);
       links.querySelector<HTMLAnchorElement>('[data-cal="outlook"]')!.href = outlookCalendarUrl(event);
-      links.querySelector<HTMLAnchorElement>('[data-cal="office"]')!.href = outlookCalendarUrl(event, "outlook.office.com");
+      links.querySelector<HTMLAnchorElement>('[data-cal="office"]')!.href = outlookCalendarUrl(
+        event,
+        "outlook.office.com",
+      );
       const ics = icsFile(event, `${start.getTime()}-${crypto.randomUUID()}@parameter.digital`);
       links.querySelector<HTMLAnchorElement>('[data-cal="ics"]')!.href = URL.createObjectURL(
         new Blob([ics], { type: "text/calendar;charset=utf-8" }),

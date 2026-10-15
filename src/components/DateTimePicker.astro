@@ -17,7 +17,9 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
 ---
 
 <div class="relative" data-dtp data-slots={JSON.stringify(slots)} data-max-days={maxDaysAhead}>
-  <span id={`${id}-label`} class="mb-2 block text-sm text-muted">{label}</span>
+  <span id={`${id}-label`} class="mb-2 block text-sm text-muted">
+    {label}
+  </span>
   <input type="hidden" name="date" data-dtp-date />
   <input type="hidden" name="time" data-dtp-time />
 
@@ -31,16 +33,34 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
     aria-labelledby={`${id}-label ${id}-value`}
     data-dtp-trigger
   >
-    <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      class="size-4 shrink-0 text-muted"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      aria-hidden="true"
+    >
       <rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect>
       <path d="M3.5 10h17M8 3v4M16 3v4" stroke-linecap="round"></path>
     </svg>
-    <span id={`${id}-value`} class="flex-1 text-subtle" data-dtp-value>Select a date and time</span>
-    <svg viewBox="0 0 16 16" class="size-4 shrink-0 text-subtle" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+    <span id={`${id}-value`} class="flex-1 text-subtle" data-dtp-value>
+      Select a date and time
+    </span>
+    <svg
+      viewBox="0 0 16 16"
+      class="size-4 shrink-0 text-subtle"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      aria-hidden="true"
+    >
       <path d="m4 6 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
     </svg>
   </button>
-  <p class="mt-2 hidden text-xs text-warning" data-dtp-error>Please choose a date and time.</p>
+  <p class="mt-2 hidden text-xs text-warning" data-dtp-error>
+    Please choose a date and time.
+  </p>
 
   <div
     id={`${id}-popup`}
@@ -55,27 +75,55 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
           <p class="text-sm font-medium" aria-live="polite" data-dtp-month></p>
           <div class="flex gap-1">
             <button type="button" class="nav-btn" aria-label="Previous month" data-dtp-prev>
-              <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="m10 4-4 4 4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <svg
+                viewBox="0 0 16 16"
+                class="size-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                aria-hidden="true"
+              >
+                <path d="m10 4-4 4 4 4" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
             </button>
             <button type="button" class="nav-btn" aria-label="Next month" data-dtp-next>
-              <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <svg
+                viewBox="0 0 16 16"
+                class="size-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                aria-hidden="true"
+              >
+                <path d="m6 4 4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
             </button>
           </div>
         </div>
         <div class="mt-4 grid grid-cols-7 text-center font-mono text-[11px] text-subtle" aria-hidden="true">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          <span>Su</span>
+          <span>Mo</span>
+          <span>Tu</span>
+          <span>We</span>
+          <span>Th</span>
+          <span>Fr</span>
+          <span>Sa</span>
         </div>
         <div class="mt-2 grid grid-cols-7 gap-1" data-dtp-days></div>
       </div>
 
       <div class="border-t border-line pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
-        <p class="text-sm font-medium" data-dtp-day-label>Pick a day</p>
+        <p class="text-sm font-medium" data-dtp-day-label>
+          Pick a day
+        </p>
         <div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-1" data-dtp-slots>
           <p class="col-span-3 text-xs text-subtle sm:col-span-1">Available times will show here.</p>
         </div>
       </div>
     </div>
-    <p class="mt-4 border-t border-line pt-3 text-xs text-subtle" data-dtp-tz>Weekdays only. Times are in your time zone.</p>
+    <p class="mt-4 border-t border-line pt-3 text-xs text-subtle" data-dtp-tz>
+      Weekdays only. Times are in your time zone.
+    </p>
   </div>
 </div>
 
@@ -143,7 +191,10 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
         btn.type = "button";
         btn.textContent = String(day);
         btn.disabled = !isBookable(date);
-        btn.setAttribute("aria-label", date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }));
+        btn.setAttribute(
+          "aria-label",
+          date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }),
+        );
         btn.setAttribute("aria-pressed", String(selected));
         btn.className = selected
           ? "aspect-square rounded-lg bg-brand text-sm font-medium text-white"
@@ -167,7 +218,11 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
         slotsEl.append(hint);
         return;
       }
-      dayLabelEl.textContent = selectedDate.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      dayLabelEl.textContent = selectedDate.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      });
 
       const chosenTime = dateInput.value === toValue(selectedDate) ? timeInput.value : "";
       for (const slot of slots) {
@@ -202,7 +257,10 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
       renderSlots();
       popup.classList.remove("hidden");
       trigger.setAttribute("aria-expanded", "true");
-      (daysEl.querySelector<HTMLButtonElement>('[aria-pressed="true"]') ?? daysEl.querySelector<HTMLButtonElement>("button:not(:disabled)"))?.focus();
+      (
+        daysEl.querySelector<HTMLButtonElement>('[aria-pressed="true"]') ??
+        daysEl.querySelector<HTMLButtonElement>("button:not(:disabled)")
+      )?.focus();
     }
 
     function close(returnFocus = true) {
