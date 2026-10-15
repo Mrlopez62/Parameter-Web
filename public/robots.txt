@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://parameter.digital/sitemap-index.xml
