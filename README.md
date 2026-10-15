@@ -58,4 +58,20 @@ The discovery-call form (`src/components/sections/Contact.astro`) uses [Netlify 
 
 After submitting, visitors can add the requested time to Google Calendar, Outlook.com, Outlook (Microsoft 365), or Apple Calendar / other apps via an `.ics` file (`src/lib/calendar.ts`). The event is marked as requested/tentative until we confirm by email.
 
+### Email checks
+
+The email field is checked live, in three layers (`src/scripts/email-verify.ts`):
+
+1. **Typo suggestions** in the browser, e.g. `gmial.com` -> `gmail.com` (`src/lib/email-check.ts`).
+2. **Domain check**: `netlify/functions/verify-email.mts` (`/api/verify-email`) confirms the domain can receive mail
+   and isn't a throwaway service. Free; only the domain is sent; cached at the edge for a day.
+3. **Mailbox check**: `netlify/functions/verify-mailbox.mts` (`/api/verify-mailbox`) asks
+   [Abstract API](https://www.abstractapi.com/api/email-verification-validation-api) whether the exact address exists.
+   Inactive until `ABSTRACT_API_KEY` is set under **Project configuration -> Environment variables** in Netlify. Runs
+   only on blur/submit, is cached per address, and is rate-limited per visitor.
+
+Only a definite "can't receive mail", "throwaway", or "mailbox doesn't exist" blocks the form. Anything uncertain, and
+any error or exhausted quota, lets the enquiry through. Neither function runs under `astro dev`/`astro preview`; the
+form then skips those checks.
+
 In `npm run dev`, submissions are not sent anywhere; the form skips straight to the success screen so the flow can be tested locally.

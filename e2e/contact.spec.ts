@@ -160,3 +160,126 @@ test.describe("discovery call form", () => {
     await expect(page.getByRole("heading", { name: "Request sent" })).toBeHidden();
   });
 });
+
+test.describe("live email check", () => {
+  // Simulates the Netlify Function (/api/verify-email), which `astro preview` doesn't serve.
+  async function mockVerify(page: Page, statuses: Record<string, string>) {
+    const queried: string[] = [];
+    await page.route("**/api/verify-email?**", async (route) => {
+      const url = new URL(route.request().url());
+      queried.push(url.search);
+      const status = statuses[url.searchParams.get("domain") ?? ""] ?? "ok";
+      await route.fulfill({ json: { status } });
+    });
+    return queried;
+  }
+
+  test("confirms a good address and only sends the domain", async ({ page }) => {
+    const queried = await mockVerify(page, { "company.com": "ok" });
+    await openContact(page);
+    await page.getByLabel("Email").fill("sam.lee@company.com");
+    await page.getByLabel("Email").blur();
+
+    await expect(page.locator("#cf-email-status")).toHaveText("✓ Email looks good");
+    expect(queried).toEqual(["?domain=company.com"]); // never the local part
+  });
+
+  test("suggests a fix for a typo and applies it in one click", async ({ page }) => {
+    await mockVerify(page, { "gmial.com": "disposable", "gmail.com": "ok" });
+    await openContact(page);
+    await page.getByLabel("Email").fill("sam@gmial.com");
+    await page.getByLabel("Email").blur();
+
+    const status = page.locator("#cf-email-status");
+    await expect(status).toContainText("Did you mean sam@gmail.com?");
+    await status.getByRole("button", { name: "sam@gmail.com" }).click();
+
+    await expect(page.getByLabel("Email")).toHaveValue("sam@gmail.com");
+    await expect(status).toHaveText("✓ Email looks good");
+  });
+
+  test("blocks a domain that can't receive email", async ({ page }) => {
+    await mockVerify(page, { "no-mail.example": "no-mail" });
+    await openContact(page);
+    let posted = false;
+    page.on("request", (req) => (posted ||= isFormPost(req)));
+
+    await fillDetails(page);
+    await page.getByLabel("Email").fill("sam@no-mail.example");
+    await pickTuesday10am(page);
+    await page.getByRole("button", { name: "Request discovery call" }).click();
+
+    await expect(page.locator("#cf-email-status")).toHaveText(
+      "This email domain can't receive mail. Please check the address.",
+    );
+    expect(await page.getByLabel("Email").evaluate((el: HTMLInputElement) => el.validity.customError)).toBe(true);
+    expect(posted).toBe(false);
+
+    // Fixing the address clears the block.
+    await page.getByLabel("Email").fill("sam@company.com");
+    await page.getByLabel("Email").blur();
+    await expect(page.locator("#cf-email-status")).toHaveText("✓ Email looks good");
+    expect(await page.getByLabel("Email").evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(true);
+  });
+
+  test("rejects throwaway email services", async ({ page }) => {
+    await mockVerify(page, { "mailinator.com": "disposable" });
+    await openContact(page);
+    await page.getByLabel("Email").fill("sam@mailinator.com");
+    await page.getByLabel("Email").blur();
+
+    await expect(page.locator("#cf-email-status")).toHaveText(
+      "Please use a permanent email address so we can reply to you.",
+    );
+  });
+});
+
+test.describe("mailbox check (Abstract API, when configured)", () => {
+  async function mockApis(page: Page, mailbox: string) {
+    const mailboxCalls: string[] = [];
+    await page.route("**/api/verify-email?**", (route) => route.fulfill({ json: { status: "ok" } }));
+    await page.route("**/api/verify-mailbox", async (route) => {
+      mailboxCalls.push((route.request().postDataJSON() as { email: string }).email);
+      await route.fulfill({ json: { status: mailbox } });
+    });
+    return mailboxCalls;
+  }
+
+  test("only checks the mailbox when leaving the field, not while typing", async ({ page }) => {
+    const calls = await mockApis(page, "ok");
+    await openContact(page);
+    await page.getByLabel("Email").pressSequentially("sam@company.com", { delay: 20 });
+    await expect(page.locator("#cf-email-status")).toHaveText("✓ Email looks good"); // debounced domain check
+    expect(calls).toEqual([]);
+
+    await page.getByLabel("Email").blur();
+    await expect(page.locator("#cf-email-status")).toHaveText("✓ Email verified");
+    expect(calls).toEqual(["sam@company.com"]);
+  });
+
+  test("blocks an address whose mailbox doesn't exist", async ({ page }) => {
+    await mockApis(page, "no-mailbox");
+    await openContact(page);
+    let posted = false;
+    page.on("request", (req) => (posted ||= isFormPost(req)));
+
+    await fillDetails(page);
+    await page.getByLabel("Email").fill("dummytest@gmail.com");
+    await pickTuesday10am(page);
+    await page.getByRole("button", { name: "Request discovery call" }).click();
+
+    await expect(page.locator("#cf-email-status")).toHaveText(
+      "We couldn't find this mailbox. Please check the address.",
+    );
+    expect(posted).toBe(false);
+  });
+
+  test("lets the address through when the check is unavailable or not configured", async ({ page }) => {
+    await mockApis(page, "skipped");
+    await openContact(page);
+    await page.getByLabel("Email").fill("sam@company.com");
+    await page.getByLabel("Email").blur();
+    await expect(page.locator("#cf-email-status")).toHaveText("✓ Email looks good");
+    expect(await page.getByLabel("Email").evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(true);
+  });
+});

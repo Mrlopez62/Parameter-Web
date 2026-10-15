@@ -77,7 +77,22 @@ const label = "mb-2 block text-sm text-muted";
           <label for="cf-email" class={label}>
             Email
           </label>
-          <input id="cf-email" name="email" type="email" required autocomplete="email" class={field} />
+          <input
+            id="cf-email"
+            name="email"
+            type="email"
+            required
+            autocomplete="email"
+            aria-describedby="cf-email-status"
+            class={field}
+          />
+          {/* Live check result: typo suggestion, domain can't receive mail, etc. */}
+          <p
+            id="cf-email-status"
+            class="mt-2 min-h-4 text-xs text-subtle data-[state=error]:text-warning data-[state=ok]:text-success data-[state=suggest]:text-muted"
+            aria-live="polite"
+            data-email-status
+          ></p>
         </div>
         <div>
           <label for="cf-business" class={label}>
@@ -176,6 +191,7 @@ const label = "mb-2 block text-sm text-muted";
 
 <script>
   import { googleCalendarUrl, icsFile, outlookCalendarUrl, type CalendarEvent } from "../../lib/calendar";
+  import { attachEmailVerification } from "../../scripts/email-verify";
 
   const CALL_MINUTES = 30;
   const EMAIL = "hello@parameter.digital";
@@ -188,6 +204,8 @@ const label = "mb-2 block text-sm text-muted";
     const dateInput = form.querySelector<HTMLInputElement>('input[name="date"]')!;
     const timeInput = form.querySelector<HTMLInputElement>('input[name="time"]')!;
     const picker = form.querySelector<HTMLElement>("[data-dtp]")!;
+    const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]')!;
+    const emailCheck = attachEmailVerification(emailInput, form.querySelector<HTMLElement>("[data-email-status]")!);
 
     form.querySelector<HTMLInputElement>('input[name="timezone"]')!.value =
       Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -195,6 +213,8 @@ const label = "mb-2 block text-sm text-muted";
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorEl.classList.add("hidden");
+      // Finish the live email check first: a bad domain sets a custom validity message.
+      await emailCheck.ensureChecked();
       if (!form.reportValidity()) return;
       picker.dispatchEvent(new CustomEvent("dtp:validate"));
       if (picker.dataset.valid !== "true") return;
