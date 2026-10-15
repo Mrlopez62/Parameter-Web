@@ -1,0 +1,181 @@
+---
+import {
+  siAirtable,
+  siCalendly,
+  siGmail,
+  siGooglecalendar,
+  siGoogledrive,
+  siGooglesheets,
+  siHubspot,
+  siMailchimp,
+  siMake,
+  siQuickbooks,
+  siSquare,
+  siStripe,
+  siXero,
+  siZapier,
+} from "simple-icons";
+import Container from "../Container.astro";
+import SectionHeader from "../SectionHeader.astro";
+
+const steps = [
+  { title: "Enquiry arrives", body: "From your website, inbox, or a missed call.", human: false },
+  { title: "Details captured", body: "Checked for missing info and duplicates.", human: false },
+  { title: "Quick reply", body: "An acknowledgement goes out right away.", human: false },
+  { title: "Routed to the right person", body: "Urgent or unusual requests go straight to your team.", human: true },
+  { title: "Followed up until booked", body: "Polite reminders, and a heads-up if someone needs a call.", human: true },
+];
+
+// Examples of common small-business tools. Logos from Simple Icons (CC0); the
+// brands are trademarks of their owners, shown to indicate compatibility only.
+const tools = [
+  siGmail,
+  siGooglecalendar,
+  siGooglesheets,
+  siGoogledrive,
+  siQuickbooks,
+  siXero,
+  siHubspot,
+  siCalendly,
+  siSquare,
+  siStripe,
+  siMailchimp,
+  siAirtable,
+  siZapier,
+  siMake,
+];
+
+// Simple Icons titles that differ from the brand's current styling.
+const displayName: Record<string, string> = { MailChimp: "Mailchimp" };
+
+// Tools we work with whose owners don't permit their logos in Simple Icons.
+const moreTools = ["Outlook", "Excel", "Slack", "Jobber", "Housecall Pro"];
+
+// Brand colours that are too dark to see on the page background fall back to white.
+function relativeLuminance(hex: string) {
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+const BG_LUMINANCE = relativeLuminance("0a0b0f");
+const logoColor = (hex: string) => ((relativeLuminance(hex) + 0.05) / (BG_LUMINANCE + 0.05) >= 3 ? `#${hex}` : "#f7f8fa");
+---
+
+<section id="workflow" class="scroll-mt-20 py-24 sm:py-32">
+  <Container>
+    <SectionHeader
+      eyebrow="Example workflow"
+      title="What a first automation looks like."
+      intro="Most businesses start with the path from first enquiry to booked job. Here's a typical version, with your team stepping in where judgment matters."
+    />
+
+    <ol class="mt-14 grid gap-4 md:grid-cols-5">
+      {
+        steps.map((step, i) => (
+          <li class="flex" data-reveal>
+            {/* Hover styles live on this inner card so they don't fight the reveal transform. */}
+            <div class:list={["step group relative flex w-full flex-col overflow-hidden rounded-2xl bg-surface p-5 ring-1 ring-line", step.human ? "step-team" : "step-auto"]}>
+              <div class="flex items-center justify-between">
+                <span class="step-num font-mono text-xs text-subtle transition-colors">{String(i + 1).padStart(2, "0")}</span>
+                {step.human ? (
+                  <span class="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">Your team</span>
+                ) : (
+                  <span class="rounded-full bg-brand/15 px-2 py-0.5 text-[11px] text-brand-soft">Automated</span>
+                )}
+              </div>
+              <h3 class="mt-4 font-semibold">{step.title}</h3>
+              <p class="mt-1.5 text-sm leading-relaxed text-muted transition-colors group-hover:text-fg/80">{step.body}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="mt-16 rounded-2xl bg-surface/60 p-6 ring-1 ring-line sm:p-8" data-reveal>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <h3 class="text-xl font-semibold">Works with the tools you already use</h3>
+        <p class="text-sm text-muted">Don't see yours? Ask us on the discovery call.</p>
+      </div>
+      <ul class="mt-6 flex flex-wrap gap-2">
+        {
+          tools.map((tool) => (
+            <li
+              class="tool flex items-center gap-2.5 rounded-xl bg-bg px-3.5 py-3 ring-1 ring-line transition"
+              style={`--tool: #${tool.hex}`}
+            >
+              <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill={logoColor(tool.hex)} aria-hidden="true">
+                <path d={tool.path} />
+              </svg>
+              <span class="text-sm whitespace-nowrap text-fg">{displayName[tool.title] ?? tool.title}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mt-5 text-sm text-muted">
+        Also {moreTools.join(", ")}, and more.
+      </p>
+      <p class="mt-6 text-xs text-subtle">
+        Product names and logos are trademarks of their respective owners, shown to indicate compatibility. No
+        endorsement or partnership is implied.
+      </p>
+    </div>
+  </Container>
+</section>
+
+<style>
+  /* Workflow steps: lift, tinted ring and glow, and a top accent line on hover.
+     The accent matches the step's label: brand blue (automated) or amber (your team). */
+  .step {
+    --accent: var(--color-brand-soft);
+    transition:
+      transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.35s ease,
+      background-color 0.35s ease;
+  }
+  .step-team {
+    --accent: var(--color-warning);
+  }
+  .step::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    transform: scaleX(0);
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .step::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .step:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+      0 18px 40px -22px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  .step:hover::before {
+    transform: scaleX(1);
+  }
+  .step:hover::after {
+    opacity: 1;
+  }
+  .step:hover .step-num {
+    color: var(--accent);
+  }
+
+  /* Each tile picks up its brand colour on hover. */
+  .tool:hover {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--tool) 55%, transparent),
+      0 8px 24px -12px color-mix(in srgb, var(--tool) 60%, transparent);
+    background: color-mix(in srgb, var(--tool) 8%, var(--color-bg));
+  }
+</style>

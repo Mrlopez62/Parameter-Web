@@ -1,0 +1,145 @@
+---
+import Container from "../Container.astro";
+import SectionHeader from "../SectionHeader.astro";
+
+// The small UI mockups below are illustrations of each service, not real data.
+const leads = [
+  { name: "Jordan P.", source: "Web form" },
+  { name: "Alex R.", source: "Email" },
+  { name: "Casey M.", source: "Missed call" },
+];
+
+const schedule = [
+  { time: "9:00", who: "Site visit · Patel", status: "Confirmed", tone: "text-success bg-success/10" },
+  { time: "11:30", who: "Quote review · Nguyen", status: "Reminder sent", tone: "text-brand-soft bg-brand/15" },
+  { time: "2:00", who: "Follow-up · Garcia", status: "Rescheduled", tone: "text-warning bg-warning/10" },
+];
+
+const fields = [
+  ["Name", "Jordan Patel"],
+  ["Phone", "(555) 014-2290"],
+  ["Service", "Repair"],
+];
+
+const bars = [
+  { day: "Mon", h: 45 },
+  { day: "Tue", h: 70 },
+  { day: "Wed", h: 55 },
+  { day: "Thu", h: 85 },
+  { day: "Fri", h: 60 },
+];
+---
+
+<section id="services" class="scroll-mt-20 py-24 sm:py-32">
+  <Container>
+    <SectionHeader
+      eyebrow="Services"
+      title="Automation for the work that keeps you busy."
+      intro="We start with the repetitive tasks that slow your team down and cost you customers, then automate them inside the tools you already use."
+    />
+
+    <div class="mt-14 grid gap-5 md:grid-cols-2">
+      {/* Enquiry intake */}
+      <article class="card" data-reveal>
+        <h3 class="text-xl font-semibold">Enquiry intake &amp; follow-up</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">
+          Capture every enquiry from your website, inbox, and phone, reply quickly, and follow up until it's booked or closed.
+        </p>
+        <div class="mock" aria-hidden="true">
+          {
+            leads.map((lead) => (
+              <div class="flex items-center gap-3 rounded-lg bg-bg/60 px-3 py-2.5 ring-1 ring-line">
+                <span class="grid size-7 place-items-center rounded-full bg-brand/20 text-[11px] font-medium text-brand-soft">
+                  {lead.name[0]}
+                </span>
+                <span class="min-w-0 flex-1 truncate text-sm">{lead.name}</span>
+                <span class="rounded-full bg-surface-2 px-2 py-0.5 font-mono text-[10px] text-muted">{lead.source}</span>
+                <span class="shrink-0 text-xs text-success">Replied ✓</span>
+              </div>
+            ))
+          }
+        </div>
+      </article>
+
+      {/* Scheduling */}
+      <article class="card" data-reveal>
+        <h3 class="text-xl font-semibold">Scheduling &amp; reminders</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">
+          Offer times, send confirmations and reminders, and flag no-shows and reschedules to your team automatically.
+        </p>
+        <div class="mock" aria-hidden="true">
+          {
+            schedule.map((item) => (
+              <div class="flex items-center gap-3 rounded-lg bg-bg/60 px-3 py-2.5 ring-1 ring-line">
+                <span class="w-11 font-mono text-xs text-subtle">{item.time}</span>
+                <span class="flex-1 truncate text-sm">{item.who}</span>
+                <span class:list={["rounded-full px-2 py-0.5 text-[11px]", item.tone]}>{item.status}</span>
+              </div>
+            ))
+          }
+        </div>
+      </article>
+
+      {/* CRM & admin */}
+      <article class="card" data-reveal>
+        <h3 class="text-xl font-semibold">CRM &amp; admin work</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">
+          Stop copying details between systems. Records, invoices, and job details stay up to date without retyping.
+        </p>
+        <div class="mock" aria-hidden="true">
+          <div class="flex items-center gap-2 font-mono text-[11px] text-muted">
+            <span class="rounded-md bg-surface-2 px-2 py-1 ring-1 ring-line">Web form</span>
+            <span class="h-px flex-1 bg-gradient-to-r from-line via-brand to-line"></span>
+            <span class="rounded-md bg-brand/15 px-2 py-1 text-brand-soft ring-1 ring-brand/40">CRM</span>
+          </div>
+          <div class="mt-1 rounded-lg bg-bg/60 ring-1 ring-line">
+            {
+              fields.map(([k, v]) => (
+                <div class="flex justify-between border-b border-line px-3 py-2 text-sm last:border-0">
+                  <span class="text-subtle">{k}</span>
+                  <span>{v}</span>
+                </div>
+              ))
+            }
+          </div>
+          <p class="text-xs text-success">✓ No duplicate found · record created</p>
+        </div>
+      </article>
+
+      {/* Reporting */}
+      <article class="card" data-reveal>
+        <h3 class="text-xl font-semibold">Reporting</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">
+          See what's happening without building spreadsheets: enquiries, response times, and bookings, delivered to your inbox.
+        </p>
+        <div class="mock" aria-hidden="true">
+          <div class="flex items-baseline justify-between">
+            <span class="text-sm">Enquiries this week</span>
+            <span class="font-mono text-[11px] text-subtle">Weekly report</span>
+          </div>
+          <div class="flex h-28 gap-3 rounded-lg bg-bg/60 px-4 pt-4 pb-2 ring-1 ring-line">
+            {
+              bars.map((bar) => (
+                <div class="flex flex-1 flex-col items-center justify-end gap-2">
+                  <div class="w-full rounded-t-md bg-gradient-to-t from-brand/40 to-brand" style={`height:${bar.h}%`} />
+                  <span class="font-mono text-[10px] text-subtle">{bar.day}</span>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </article>
+    </div>
+  </Container>
+</section>
+
+<style>
+  @reference "../../styles/global.css";
+
+  .card {
+    @apply flex min-w-0 flex-col rounded-2xl bg-surface p-6 ring-1 ring-line sm:p-8;
+  }
+  .mock {
+    @apply mt-8 flex flex-col gap-2 rounded-xl bg-surface-2/60 p-4 ring-1 ring-line;
+  }
+</style>

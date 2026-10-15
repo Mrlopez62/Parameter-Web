@@ -1,0 +1,51 @@
+---
+import Container from "../Container.astro";
+import SectionHeader from "../SectionHeader.astro";
+
+// From the company principles (Parameter/company/COMPANY_GOAL.md). Shown in
+// place of testimonials until we have customer stories we're allowed to share.
+const principles = [
+  {
+    title: "Start with a real problem",
+    body: "We agree on the process and the outcome before choosing any tools. Sometimes the honest answer is that you don't need automation.",
+  },
+  {
+    title: "Make value measurable",
+    body: "We measure a baseline first, so you can see exactly what changed: time saved, faster replies, fewer missed enquiries.",
+  },
+  {
+    title: "Keep people in control",
+    body: "Your team reviews anything important and can take over at any time. Automation handles the routine, not the judgment calls.",
+  },
+  {
+    title: "Fit your business",
+    body: "We build around the tools and habits you already have, and leave you with something you own and understand.",
+  },
+];
+---
+
+<section id="principles" class="scroll-mt-20 border-y border-line bg-surface/40 py-24 sm:py-32">
+  <Container>
+    <SectionHeader
+      eyebrow="Principles"
+      title="Automation you can trust."
+      intro="Four commitments behind every project we take on."
+    />
+
+    <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        principles.map((p) => (
+          <article class="rounded-2xl bg-bg p-6 ring-1 ring-line" data-reveal>
+            <svg viewBox="0 0 64 64" class="size-8" aria-hidden="true">
+              <path d="M22 10 H11 V54 H22" fill="none" stroke="currentColor" class="text-line" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" />
+              <path d="M42 10 H53 V54 H42" fill="none" stroke="currentColor" class="text-line" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" />
+              <circle cx="32" cy="32" r="8" class="fill-brand" />
+            </svg>
+            <h3 class="mt-5 text-lg font-semibold">{p.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-muted">{p.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </Container>
+</section>

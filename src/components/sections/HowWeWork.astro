@@ -1,0 +1,193 @@
+---
+import Container from "../Container.astro";
+import SectionHeader from "../SectionHeader.astro";
+
+// Each line's status wraps under the code on narrow screens instead of scrolling.
+const kw = (t: string) => `<span class="text-brand-soft">${t}</span>`;
+const fn = (t: string) => `<span class="text-fg">${t}</span>`;
+const rawLines = [
+  { code: `<span class="text-subtle">// Runs on every new enquiry</span>` },
+  { code: `${kw("const")} lead = ${kw("await")} intake.${fn("capture")}(enquiry)` },
+  { code: `${kw("await")} crm.${fn("upsert")}(lead)`, status: "✓ record updated", tone: "text-success" },
+  { code: `${kw("const")} reply = ${kw("await")} drafts.${fn("reply")}(lead)`, status: "✓ draft ready", tone: "text-success" },
+  { code: `${kw("await")} team.${fn("review")}(reply)`, status: "⏸ waiting for office manager", tone: "text-warning" },
+];
+
+// Typing animation timing. Each line types one character per CHAR_MS (monospace,
+// so the reveal width is `chars` × 1ch), then its status fades in.
+const START_MS = 300;
+const CHAR_MS = 28;
+const LINE_GAP_MS = 350;
+let cursor = START_MS;
+const codeLines = rawLines.map((line) => {
+  const chars = line.code.replace(/<[^>]+>/g, "").length;
+  const delay = cursor;
+  const duration = chars * CHAR_MS;
+  cursor += duration + LINE_GAP_MS;
+  return { ...line, style: `--chars:${chars};--delay:${delay}ms;--dur:${duration}ms` };
+});
+const doneMs = cursor;
+
+const steps = [
+  {
+    title: "Discover",
+    body: "We learn how the work happens today, measure where time goes, and agree with you what better looks like.",
+  },
+  {
+    title: "Build",
+    body: "We automate one workflow inside the tools you already use, with your team reviewing anything that matters.",
+  },
+  {
+    title: "Measure & improve",
+    body: "We compare results against the baseline, then keep it running and improving as your business changes.",
+  },
+];
+---
+
+<section id="how-we-work" class="scroll-mt-20 border-y border-line bg-surface/40 py-24 sm:py-32">
+  <Container class="grid items-center gap-14 lg:grid-cols-2">
+    <div>
+      <SectionHeader
+        eyebrow="How we work"
+        title="From busywork to measured results in three steps."
+      />
+      <ol class="mt-10 space-y-8">
+        {
+          steps.map((step, i) => (
+            <li class="flex gap-5" data-reveal>
+              <span class="grid size-10 shrink-0 place-items-center rounded-full bg-brand/15 font-mono text-sm text-brand-soft ring-1 ring-brand/40">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <h3 class="text-lg font-semibold">{step.title}</h3>
+                <p class="mt-1.5 leading-relaxed text-muted">{step.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    {/* Illustrative workflow file: shows a person approving before anything is sent. */}
+    <figure
+      class="code-anim overflow-hidden rounded-2xl bg-bg shadow-2xl ring-1 shadow-black/50 ring-line"
+      style={`--done:${doneMs}ms`}
+      data-reveal
+      data-code-anim
+      aria-label="Example automation that hands off to a person for review"
+    >
+      <div class="flex items-center gap-2 border-b border-line px-5 py-3">
+        <span class="size-2.5 rounded-full bg-line"></span>
+        <span class="size-2.5 rounded-full bg-line"></span>
+        <span class="size-2.5 rounded-full bg-line"></span>
+        <span class="ml-3 font-mono text-xs text-muted">lead-intake.ts</span>
+      </div>
+      <div class="space-y-1.5 p-5 font-mono text-[12px] leading-6 text-muted sm:text-[13px]">
+        {
+          codeLines.map((line) => (
+            <p class="flex flex-wrap items-baseline justify-between gap-x-4" style={line.style}>
+              <code class="type" set:html={line.code} />
+              {line.status && <span class:list={["status pl-4 sm:pl-0", line.tone]}>{line.status}</span>}
+            </p>
+          ))
+        }
+        <p class="end-caret h-6" aria-hidden="true"></p>
+      </div>
+      <div class="note flex items-center gap-2 border-t border-line px-5 py-3 text-xs text-muted">
+        <span class="size-1.5 animate-pulse-dot rounded-full bg-warning"></span>
+        Nothing is sent until a person approves it.
+      </div>
+    </figure>
+  </Container>
+</section>
+
+<style>
+  @reference "../../styles/global.css";
+
+  /* Typing animation. Hidden states only apply with JS (html.js), and only
+     until the panel scrolls into view and gets .is-typing. */
+  .type {
+    display: inline-block;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .code-anim .type {
+      width: 0;
+      overflow: hidden;
+      border-right: 2px solid transparent;
+    }
+    :global(.js) .code-anim .status,
+    :global(.js) .code-anim .note {
+      opacity: 0;
+    }
+
+    .code-anim.is-typing .type {
+      animation:
+        type var(--dur) steps(var(--chars), end) var(--delay) forwards,
+        caret var(--dur) step-end var(--delay);
+    }
+    .code-anim.is-typing .status {
+      animation: fade-in 0.4s ease calc(var(--delay) + var(--dur) + 120ms) forwards;
+    }
+    .code-anim.is-typing .note {
+      animation: fade-in 0.5s ease var(--done) forwards;
+    }
+
+    /* Blinking cursor left on a fresh line once everything has typed out. */
+    .code-anim.is-typing .end-caret::before {
+      content: "";
+      display: inline-block;
+      width: 0.55em;
+      height: 1.1em;
+      vertical-align: -0.2em;
+      background: var(--color-brand-soft);
+      opacity: 0;
+      animation: blink 1.1s step-end var(--done) infinite;
+    }
+  }
+
+  @keyframes type {
+    to {
+      /* + 2px: the caret border sits inside the border-box width. */
+      width: calc(var(--chars) * 1ch + 2px);
+    }
+  }
+  @keyframes caret {
+    0%,
+    100% {
+      border-right-color: var(--color-brand-soft);
+    }
+  }
+  @keyframes fade-in {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  // Start typing once the panel is mostly in view (runs once).
+  const panel = document.querySelector<HTMLElement>("[data-code-anim]");
+  if (panel) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        panel.classList.add("is-typing");
+        observer.disconnect();
+      },
+      { threshold: 0.6 },
+    );
+    observer.observe(panel);
+  }
+</script>

@@ -1,0 +1,291 @@
+---
+import { site } from "../../data/site";
+import Button from "../Button.astro";
+import Container from "../Container.astro";
+import SectionHeader from "../SectionHeader.astro";
+
+// Prices are deliberately not shown: scope (and so price) is agreed after the
+// discovery call. See docs/research/automation-services-pricing.md.
+const paidSteps = [
+  {
+    step: "02",
+    name: "Fixed-scope pilot",
+    tagline: "Fixed price, agreed before any work starts.",
+    points: [
+      "One workflow, automated end to end",
+      "A baseline measured before launch",
+      "Your team reviews exceptions and can take over at any time",
+      "Results measured against the baseline",
+      "You own the accounts, plus a written plan for switching it off",
+    ],
+  },
+  {
+    step: "03",
+    name: "Ongoing support",
+    tagline: "A simple monthly plan to keep it running and improving.",
+    points: [
+      "Monitoring and failure alerts",
+      "Fixes when your tools or processes change",
+      "Small adjustments as your business changes",
+      "A monthly report on the results",
+    ],
+  },
+];
+
+const discoveryPoints = [
+  "Walk us through the work that eats your week",
+  "An honest view of whether automation will help",
+  "If it will, where to start and how we'd measure it",
+];
+
+// Entrance sequence: step N starts STEP_MS after step N-1.
+const STEP_MS = 700;
+const track = ["Talk", "Prove it works", "Keep improving"];
+---
+
+<section id="work-with-us" class="scroll-mt-20 py-24 sm:py-32">
+  <Container>
+    <SectionHeader
+      eyebrow="Work with us"
+      title="Start with a conversation, not a contract."
+      intro="Every engagement starts with a free discovery call. If automation is a good fit, you get a fixed quote for a small pilot before anything is built."
+    />
+
+    <div class="engage mt-14" data-engage>
+      {/* Progress track (desktop only): lights up 01 -> 02 -> 03 in step with the cards. */}
+      <ol class="mb-6 hidden gap-5 lg:grid lg:grid-cols-[1.15fr_1fr_1fr]" aria-hidden="true">
+        {
+          track.map((label, i) => (
+            <li class="flex items-center gap-3" style={`--d:${i * STEP_MS}ms`}>
+              <span class="node grid size-3 shrink-0 place-items-center rounded-full bg-brand" />
+              <span class="font-mono text-xs whitespace-nowrap text-muted">
+                {String(i + 1).padStart(2, "0")} · {label}
+              </span>
+              {i < track.length - 1 && <span class="seg h-px flex-1 bg-gradient-to-r from-brand-soft to-line" />}
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="grid gap-5 lg:grid-cols-[1.15fr_1fr_1fr]">
+        <article
+          class="card discovery relative flex flex-col overflow-hidden rounded-2xl bg-brand/10 p-7 ring-1 ring-brand/50 sm:p-8"
+          style="--d:0ms"
+        >
+          <div class="glow absolute inset-0 -z-10" aria-hidden="true"></div>
+          <p class="font-mono text-xs text-brand-soft">01</p>
+          <h3 class="mt-3 text-xl font-semibold">Discovery call</h3>
+          <p class="free mt-6 text-5xl font-semibold tracking-[-0.04em]">Free</p>
+          <p class="mt-2 text-sm text-muted">30 minutes. No obligation.</p>
+          <ul class="mt-7 space-y-3 text-sm">
+            {
+              discoveryPoints.map((point, i) => (
+                <li class="item flex gap-3" style={`--i:${i}`}>
+                  <span class="dot mt-1.5 size-1.5 shrink-0 rounded-full bg-brand" />
+                  {point}
+                </li>
+              ))
+            }
+          </ul>
+          <div class="mt-auto pt-9">
+            <Button href={site.bookingHref} class="w-full">Book a free discovery call</Button>
+          </div>
+        </article>
+
+        {
+          paidSteps.map((item, s) => (
+            <article
+              class="card flex flex-col rounded-2xl bg-surface p-7 ring-1 ring-line sm:p-8"
+              style={`--d:${(s + 1) * STEP_MS}ms`}
+            >
+              <p class="font-mono text-xs text-subtle">{item.step}</p>
+              <h3 class="mt-3 text-xl font-semibold">{item.name}</h3>
+              <p class="mt-2 text-sm text-muted">{item.tagline}</p>
+              <ul class="mt-7 space-y-3 text-sm text-fg">
+                {item.points.map((point, i) => (
+                  <li class="item flex gap-3" style={`--i:${i}`}>
+                    <svg viewBox="0 0 16 16" class="check mt-0.5 size-4 shrink-0 text-success" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="m3.5 8.5 3 3 6-7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <p class="mt-8 text-sm text-subtle" data-reveal>
+      Pricing depends on the workflow and the tools involved. You'll always get a written, fixed quote before we start.
+    </p>
+  </Container>
+</section>
+
+<style>
+  @reference "../../styles/global.css";
+
+  /* Animated border angle for the discovery card's travelling light. */
+  @property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  .card {
+    transition:
+      transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.35s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 48px -26px rgb(45 91 255 / 0.55);
+  }
+
+  /* "Free" is drawn as gradient text; its resting position is plain white. */
+  .free {
+    background: linear-gradient(100deg, var(--color-fg) 40%, var(--color-brand-soft) 50%, var(--color-fg) 60%) 0 0 / 250% 100%;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /*
+   * Entrance sequence. Everything uses `backwards` fill: elements hold their
+   * hidden "from" frame only while waiting to start, then return to their normal
+   * styles, so hover effects keep working afterwards. Before the section is in
+   * view (no .is-active yet), the same hidden state is applied directly.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .engage:not(.is-active) .card {
+      opacity: 0;
+    }
+    :global(.js) .engage:not(.is-active) :is(.item, .node, .dot) {
+      opacity: 0;
+    }
+    :global(.js) .engage:not(.is-active) .seg {
+      transform: scaleX(0);
+    }
+
+    .engage.is-active .card {
+      animation: card-in 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d) backwards;
+    }
+    .engage.is-active .node {
+      animation: node-on 0.5s ease var(--d) backwards;
+    }
+    .engage.is-active .seg {
+      transform-origin: left;
+      animation: seg-draw 0.7s ease calc(var(--d) + 150ms) backwards;
+    }
+    .engage.is-active .item {
+      animation: item-in 0.45s ease calc(var(--d) + 350ms + var(--i) * 110ms) backwards;
+    }
+    .engage.is-active .check path {
+      stroke-dasharray: 14;
+      animation: check-draw 0.4s ease calc(var(--d) + 480ms + var(--i) * 110ms) backwards;
+    }
+    .engage.is-active .dot {
+      animation: dot-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) calc(var(--d) + 400ms + var(--i) * 110ms) backwards;
+    }
+    .engage.is-active .free {
+      animation: shimmer 1.6s ease 0.6s backwards;
+    }
+
+    /* A soft light that travels around the discovery card's border. */
+    .engage.is-active .discovery::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: conic-gradient(from var(--angle), transparent 0 70%, var(--color-brand-soft) 85%, transparent 100%);
+      mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+      animation:
+        fade-in 1s ease 0.8s backwards,
+        border-spin 6s linear infinite;
+    }
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(28px) scale(0.98);
+    }
+  }
+  @keyframes node-on {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+      box-shadow: 0 0 0 0 rgb(45 91 255 / 0.6);
+    }
+    60% {
+      opacity: 1;
+      box-shadow: 0 0 0 8px rgb(45 91 255 / 0);
+    }
+  }
+  @keyframes seg-draw {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes item-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+  @keyframes check-draw {
+    from {
+      stroke-dashoffset: 14;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes dot-pop {
+    from {
+      opacity: 0;
+      transform: scale(0);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: 0 0;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes border-spin {
+    to {
+      --angle: 360deg;
+    }
+  }
+</style>
+
+<script>
+  // Play the entrance sequence once, when the top of the cards is ~20% up the
+  // viewport. (A visibility-ratio threshold fails on phones, where the stacked
+  // cards are taller than the screen.)
+  const engage = document.querySelector<HTMLElement>("[data-engage]");
+  if (engage) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        engage.classList.add("is-active");
+        observer.disconnect();
+      },
+      { rootMargin: "0px 0px -20% 0px" },
+    );
+    observer.observe(engage);
+  }
+</script>

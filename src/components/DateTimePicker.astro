@@ -1,0 +1,248 @@
+---
+/*
+ * One field that opens a calendar pop-up: pick a weekday, then a time slot.
+ * Writes the choice to hidden `date` (YYYY-MM-DD) and `time` (HH:MM) inputs,
+ * both in the visitor's local time zone.
+ */
+interface Props {
+  id: string;
+  label: string;
+  /** "HH:MM" 24-hour slots offered on every bookable day. */
+  slots: string[];
+  /** How far ahead visitors can book. */
+  maxDaysAhead?: number;
+}
+
+const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
+---
+
+<div class="relative" data-dtp data-slots={JSON.stringify(slots)} data-max-days={maxDaysAhead}>
+  <span id={`${id}-label`} class="mb-2 block text-sm text-muted">{label}</span>
+  <input type="hidden" name="date" data-dtp-date />
+  <input type="hidden" name="time" data-dtp-time />
+
+  <button
+    type="button"
+    id={id}
+    class="flex w-full items-center gap-3 rounded-xl bg-bg px-4 py-3 text-left text-sm ring-1 ring-line transition-shadow focus:ring-brand-soft focus:outline-none aria-[invalid=true]:ring-warning"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    aria-controls={`${id}-popup`}
+    aria-labelledby={`${id}-label ${id}-value`}
+    data-dtp-trigger
+  >
+    <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+      <rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect>
+      <path d="M3.5 10h17M8 3v4M16 3v4" stroke-linecap="round"></path>
+    </svg>
+    <span id={`${id}-value`} class="flex-1 text-subtle" data-dtp-value>Select a date and time</span>
+    <svg viewBox="0 0 16 16" class="size-4 shrink-0 text-subtle" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+      <path d="m4 6 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+  </button>
+  <p class="mt-2 hidden text-xs text-warning" data-dtp-error>Please choose a date and time.</p>
+
+  <div
+    id={`${id}-popup`}
+    role="dialog"
+    aria-label="Choose a date and time"
+    class="absolute inset-x-0 top-full z-30 mt-2 hidden rounded-2xl bg-surface-2 p-4 shadow-2xl ring-1 shadow-black/60 ring-line sm:p-5"
+    data-dtp-popup
+  >
+    <div class="grid gap-5 sm:grid-cols-[1fr_11rem]">
+      <div>
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium" aria-live="polite" data-dtp-month></p>
+          <div class="flex gap-1">
+            <button type="button" class="nav-btn" aria-label="Previous month" data-dtp-prev>
+              <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="m10 4-4 4 4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <button type="button" class="nav-btn" aria-label="Next month" data-dtp-next>
+              <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-7 text-center font-mono text-[11px] text-subtle" aria-hidden="true">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+        <div class="mt-2 grid grid-cols-7 gap-1" data-dtp-days></div>
+      </div>
+
+      <div class="border-t border-line pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
+        <p class="text-sm font-medium" data-dtp-day-label>Pick a day</p>
+        <div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-1" data-dtp-slots>
+          <p class="col-span-3 text-xs text-subtle sm:col-span-1">Available times will show here.</p>
+        </div>
+      </div>
+    </div>
+    <p class="mt-4 border-t border-line pt-3 text-xs text-subtle" data-dtp-tz>Weekdays only. Times are in your time zone.</p>
+  </div>
+</div>
+
+<style>
+  @reference "../styles/global.css";
+
+  .nav-btn {
+    @apply grid size-8 place-items-center rounded-lg text-muted transition-colors hover:bg-line hover:text-fg disabled:pointer-events-none disabled:opacity-30;
+  }
+</style>
+
+<script>
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const toValue = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const slotLabel = (hhmm: string) => {
+    const [h, m] = hhmm.split(":").map(Number);
+    return `${((h + 11) % 12) + 1}:${pad(m)} ${h < 12 ? "AM" : "PM"}`;
+  };
+
+  document.querySelectorAll<HTMLElement>("[data-dtp]").forEach((root) => {
+    const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const trigger = $<HTMLButtonElement>("[data-dtp-trigger]");
+    const popup = $("[data-dtp-popup]");
+    const valueEl = $("[data-dtp-value]");
+    const errorEl = $("[data-dtp-error]");
+    const dateInput = $<HTMLInputElement>("[data-dtp-date]");
+    const timeInput = $<HTMLInputElement>("[data-dtp-time]");
+    const monthEl = $("[data-dtp-month]");
+    const daysEl = $("[data-dtp-days]");
+    const dayLabelEl = $("[data-dtp-day-label]");
+    const slotsEl = $("[data-dtp-slots]");
+    const prevBtn = $<HTMLButtonElement>("[data-dtp-prev]");
+    const nextBtn = $<HTMLButtonElement>("[data-dtp-next]");
+
+    const slots: string[] = JSON.parse(root.dataset.slots ?? "[]");
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    $("[data-dtp-tz]").textContent = `Weekdays only. Times are in your time zone (${tz}).`;
+
+    // Bookable range: tomorrow through maxDays ahead, in the visitor's local date.
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const minDate = new Date(today);
+    minDate.setDate(minDate.getDate() + 1);
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + Number(root.dataset.maxDays ?? 60));
+
+    let view = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    let selectedDate: Date | null = null;
+
+    const isBookable = (d: Date) => d >= minDate && d <= maxDate && d.getDay() !== 0 && d.getDay() !== 6;
+
+    function renderMonth() {
+      monthEl.textContent = view.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+      prevBtn.disabled = view <= new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+      nextBtn.disabled = new Date(view.getFullYear(), view.getMonth() + 1, 1) > maxDate;
+
+      daysEl.replaceChildren();
+      for (let i = 0; i < view.getDay(); i++) daysEl.append(document.createElement("span"));
+
+      const daysInMonth = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(view.getFullYear(), view.getMonth(), day);
+        const selected = selectedDate?.getTime() === date.getTime();
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = String(day);
+        btn.disabled = !isBookable(date);
+        btn.setAttribute("aria-label", date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }));
+        btn.setAttribute("aria-pressed", String(selected));
+        btn.className = selected
+          ? "aspect-square rounded-lg bg-brand text-sm font-medium text-white"
+          : "aspect-square rounded-lg text-sm text-fg transition-colors hover:bg-brand/20 disabled:pointer-events-none disabled:text-subtle/40";
+        btn.addEventListener("click", () => {
+          selectedDate = date;
+          renderMonth();
+          renderSlots();
+          slotsEl.querySelector("button")?.focus();
+        });
+        daysEl.append(btn);
+      }
+    }
+
+    function renderSlots() {
+      slotsEl.replaceChildren();
+      if (!selectedDate) {
+        const hint = document.createElement("p");
+        hint.className = "col-span-3 text-xs text-subtle sm:col-span-1";
+        hint.textContent = "Choose a weekday to see available times.";
+        slotsEl.append(hint);
+        return;
+      }
+      dayLabelEl.textContent = selectedDate.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+
+      const chosenTime = dateInput.value === toValue(selectedDate) ? timeInput.value : "";
+      for (const slot of slots) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = slotLabel(slot);
+        btn.setAttribute("aria-pressed", String(slot === chosenTime));
+        btn.className =
+          slot === chosenTime
+            ? "rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white"
+            : "rounded-lg px-3 py-2 text-sm text-fg ring-1 ring-line transition-colors hover:bg-brand/20 hover:ring-brand/50";
+        btn.addEventListener("click", () => choose(slot));
+        slotsEl.append(btn);
+      }
+    }
+
+    function choose(slot: string) {
+      dateInput.value = toValue(selectedDate!);
+      timeInput.value = slot;
+      const start = new Date(`${dateInput.value}T${slot}`);
+      valueEl.textContent = `${start.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} · ${slotLabel(slot)}`;
+      valueEl.classList.replace("text-subtle", "text-fg");
+      errorEl.classList.add("hidden");
+      trigger.removeAttribute("aria-invalid");
+      close();
+      root.dispatchEvent(new CustomEvent("dtp:change", { bubbles: true }));
+    }
+
+    function open() {
+      if (selectedDate) view = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      renderMonth();
+      renderSlots();
+      popup.classList.remove("hidden");
+      trigger.setAttribute("aria-expanded", "true");
+      (daysEl.querySelector<HTMLButtonElement>('[aria-pressed="true"]') ?? daysEl.querySelector<HTMLButtonElement>("button:not(:disabled)"))?.focus();
+    }
+
+    function close(returnFocus = true) {
+      if (popup.classList.contains("hidden")) return;
+      popup.classList.add("hidden");
+      trigger.setAttribute("aria-expanded", "false");
+      if (returnFocus) trigger.focus();
+    }
+
+    trigger.addEventListener("click", () => (popup.classList.contains("hidden") ? open() : close()));
+    prevBtn.addEventListener("click", () => {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      renderMonth();
+    });
+    nextBtn.addEventListener("click", () => {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      renderMonth();
+    });
+    root.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !popup.classList.contains("hidden")) {
+        e.preventDefault();
+        close();
+      }
+    });
+    // composedPath, not root.contains(target): clicking a day re-renders the grid,
+    // so the clicked button is already detached by the time this runs.
+    document.addEventListener("click", (e) => {
+      if (!e.composedPath().includes(root)) close(false);
+    });
+
+    // Lets the form ask the picker to validate itself before submitting.
+    root.addEventListener("dtp:validate", () => {
+      const ok = Boolean(dateInput.value && timeInput.value);
+      errorEl.classList.toggle("hidden", ok);
+      if (ok) trigger.removeAttribute("aria-invalid");
+      else {
+        trigger.setAttribute("aria-invalid", "true");
+        trigger.focus();
+      }
+      root.dataset.valid = String(ok);
+    });
+  });
+</script>

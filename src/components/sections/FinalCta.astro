@@ -1,0 +1,52 @@
+---
+import { site } from "../../data/site";
+import Button from "../Button.astro";
+import Container from "../Container.astro";
+
+const phrases = [
+  "Free discovery call",
+  "Fixed-price pilots",
+  "Your team stays in control",
+  "Works with your tools",
+  "Measured results",
+  "You own what we build",
+];
+---
+
+<section class="relative overflow-hidden border-t border-line pt-24 sm:pt-32">
+  <div class="glow absolute inset-0 -z-10" aria-hidden="true"></div>
+  <div class="grid-bg absolute inset-0 -z-10" aria-hidden="true"></div>
+
+  <Container class="text-center">
+    <div data-reveal>
+      <h2 class="mx-auto max-w-3xl text-4xl font-semibold sm:text-6xl">
+        Ready to <span class="text-brand-soft">automate</span> the busywork?
+      </h2>
+      <p class="mx-auto mt-5 max-w-xl text-lg text-muted">
+        Tell us what slows your team down. A 30-minute call, no obligation.
+      </p>
+      <div class="mt-9 flex justify-center">
+        <Button href={site.bookingHref}>Book a free discovery call</Button>
+      </div>
+    </div>
+  </Container>
+
+  {/* Scrolling strip: the list is duplicated so the loop is seamless. */}
+  <div class="mt-20 border-y border-line bg-bg/60 py-5 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+    <p class="sr-only">{phrases.join(". ")}.</p>
+    <div class="flex w-max animate-marquee hover:[animation-play-state:paused]" aria-hidden="true">
+      {
+        [0, 1].map(() => (
+          <ul class="flex shrink-0">
+            {phrases.map((phrase) => (
+              <li class="flex items-center gap-4 pr-10 font-mono text-sm whitespace-nowrap text-muted">
+                <span class="size-1.5 rounded-full bg-brand" />
+                {phrase}
+              </li>
+            ))}
+          </ul>
+        ))
+      }
+    </div>
+  </div>
+</section>

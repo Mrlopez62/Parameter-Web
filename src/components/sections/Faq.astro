@@ -1,0 +1,64 @@
+---
+import { site } from "../../data/site";
+import Button from "../Button.astro";
+import Container from "../Container.astro";
+import SectionHeader from "../SectionHeader.astro";
+
+const faqs = [
+  {
+    q: "Do I need to be technical?",
+    a: "No. You explain how the work happens today; we handle the design, setup, and testing, and show your team how it works before it goes live.",
+  },
+  {
+    q: "Will it work with the tools we already use?",
+    a: "That's where we start. We build around your existing email, calendar, CRM, and spreadsheets wherever we can, and we'll tell you on the discovery call if something can't be connected.",
+  },
+  {
+    q: "Do you use AI?",
+    a: "Only where it genuinely helps, such as drafting a reply or summarising an enquiry. Many automations don't need AI at all. Where we do use it, a person reviews anything important before it reaches a customer.",
+  },
+  {
+    q: "What happens if something goes wrong?",
+    a: "Every automation we build includes alerts when something fails and a clear way for your team to take over. Nothing important happens without a person able to step in.",
+  },
+  {
+    q: "How much does it cost?",
+    a: "The discovery call is free. If automation is a good fit, you get a written, fixed quote for a pilot before any work starts, based on the workflow and tools involved. Ongoing support is a simple monthly plan.",
+  },
+  {
+    q: "What if we want to stop?",
+    a: "You own the accounts and the automations, and every pilot includes a written plan for switching it off. You're never locked in.",
+  },
+];
+---
+
+<section id="faq" class="scroll-mt-20 py-24 sm:py-32">
+  <Container class="grid gap-14 lg:grid-cols-[1fr_1.5fr]">
+    <div>
+      <SectionHeader eyebrow="FAQ" title="Questions, answered." />
+      <div class="mt-10 rounded-2xl bg-surface p-6 ring-1 ring-line" data-reveal>
+        <h3 class="font-semibold">Still have questions?</h3>
+        <p class="mt-2 text-sm text-muted">Ask us on a free discovery call, or email {site.email}.</p>
+        <Button href={site.bookingHref} class="mt-5">Book a discovery call</Button>
+      </div>
+    </div>
+
+    <div class="divide-y divide-line border-y border-line" data-reveal>
+      {
+        faqs.map((item) => (
+          <details class="group py-2">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-4 text-left font-medium [&::-webkit-details-marker]:hidden">
+              {item.q}
+              <span class="grid size-7 shrink-0 place-items-center rounded-full ring-1 ring-line transition-transform group-open:rotate-45" aria-hidden="true">
+                <svg viewBox="0 0 16 16" class="size-3.5" fill="none" stroke="currentColor" stroke-width="1.75">
+                  <path d="M8 3v10M3 8h10" stroke-linecap="round" />
+                </svg>
+              </span>
+            </summary>
+            <p class="pr-12 pb-5 leading-relaxed text-muted">{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </Container>
+</section>
