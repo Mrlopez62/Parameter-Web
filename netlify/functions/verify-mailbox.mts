@@ -6,6 +6,7 @@
 // behaves as before.
 //
 // POST /api/verify-mailbox  { "email": "sam@example.com" }  ->  { "status": "ok" | "no-mailbox" | "disposable" | "unknown" | "skipped" }
+import { getStore } from "@netlify/blobs";
 import type { Config, Context } from "@netlify/functions";
 import { isEmailSyntaxValid } from "../../src/lib/email-check.ts";
 import { verifyMailbox, type MailboxStatus } from "../../src/lib/mailbox-check.ts";
@@ -16,6 +17,31 @@ const PER_IP_LIMIT = 8;
 const WINDOW_MS = 60 * 60 * 1000;
 const hits = new Map<string, { count: number; resetAt: number }>();
 const results = new Map<string, MailboxStatus>();
+
+// Daily budget for Abstract calls, shared across all instances via Netlify Blobs,
+// so even a bot that gets past the per-visitor limits can only spend one day's
+// share of the monthly quota. Cached answers don't count. Override with
+// ABSTRACT_DAILY_LIMIT. When reached, checks fail open (the form still works).
+const DEFAULT_DAILY_LIMIT = 5;
+
+async function takeFromDailyBudget(): Promise<boolean> {
+  const limit = Number(Netlify.env.get("ABSTRACT_DAILY_LIMIT")) || DEFAULT_DAILY_LIMIT;
+  try {
+    const store = getStore({ name: "mailbox-check-usage", consistency: "strong" });
+    const day = new Date().toISOString().slice(0, 10); // UTC day
+    const used = Number((await store.get(day, { type: "text" })) ?? 0);
+    if (used >= limit) {
+      console.log(`mailbox check: daily limit reached (${used}/${limit}), skipping Abstract until tomorrow (UTC)`);
+      return false;
+    }
+    await store.set(day, String(used + 1));
+    return true;
+  } catch (err) {
+    // If the counter can't be read, still allow the check; the other limits apply.
+    console.log(`mailbox check: usage counter unavailable (${(err as Error)?.name ?? "error"})`);
+    return true;
+  }
+}
 
 const ALLOWED_ORIGINS = [/^https:\/\/(www\.)?parameter\.digital$/, /^https:\/\/[a-z0-9-]+\.netlify\.app$/];
 
@@ -55,6 +81,7 @@ export default async (req: Request, context: Context) => {
   const cached = results.get(email);
   if (cached) return reply(cached);
   if (overLimit(context.ip)) return reply("unknown"); // Fail open: don't block real people.
+  if (!(await takeFromDailyBudget())) return reply("unknown");
 
   const status = await verifyMailbox(email, apiKey, { log: (m) => console.log(m) });
   if (status !== "unknown") results.set(email, status);

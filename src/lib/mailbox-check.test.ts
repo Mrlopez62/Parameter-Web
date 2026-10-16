@@ -97,6 +97,15 @@ describe("verifyMailbox", () => {
   });
 });
 
+// In-memory stand-in for Netlify Blobs (the daily usage counter).
+const blobData = new Map<string, string>();
+vi.mock("@netlify/blobs", () => ({
+  getStore: () => ({
+    get: async (key: string) => blobData.get(key) ?? null,
+    set: async (key: string, value: string) => void blobData.set(key, value),
+  }),
+}));
+
 describe("verify-mailbox function", () => {
   const env: Record<string, string> = {};
   const fetchSpy = vi.fn();
@@ -104,6 +113,7 @@ describe("verify-mailbox function", () => {
   beforeEach(() => {
     vi.resetModules();
     for (const k of Object.keys(env)) delete env[k];
+    blobData.clear();
     vi.stubGlobal("Netlify", { env: { get: (k: string) => env[k] } });
     fetchSpy
       .mockReset()
@@ -155,6 +165,7 @@ describe("verify-mailbox function", () => {
 
   it("caches answers and rate-limits each visitor, failing open", async () => {
     env.ABSTRACT_API_KEY = "KEY";
+    env.ABSTRACT_DAILY_LIMIT = "100"; // isolate the per-visitor limit from the daily budget
     expect((await call({ body: { email: "a@example.com" } })).status).toBe("ok");
     expect((await call({ body: { email: "A@Example.com" } })).status).toBe("ok"); // cached, case-insensitive
     expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -165,5 +176,27 @@ describe("verify-mailbox function", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(8);
     // A different visitor is unaffected.
     expect((await call({ body: { email: "other@example.com" }, ip: "203.0.113.2" })).status).toBe("ok");
+  });
+
+  it("stops calling Abstract once the daily budget is spent, failing open", async () => {
+    env.ABSTRACT_API_KEY = "KEY";
+    env.ABSTRACT_DAILY_LIMIT = "2";
+    // Different visitors, so the per-visitor limit isn't what stops it.
+    expect((await call({ body: { email: "a@example.com" }, ip: "198.51.100.1" })).status).toBe("ok");
+    expect((await call({ body: { email: "b@example.com" }, ip: "198.51.100.2" })).status).toBe("ok");
+    expect(await call({ body: { email: "c@example.com" }, ip: "198.51.100.3" })).toEqual({
+      code: 200,
+      status: "unknown",
+    });
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    // Cached answers are still served and don't spend budget.
+    expect((await call({ body: { email: "a@example.com" }, ip: "198.51.100.4" })).status).toBe("ok");
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("defaults to 5 checks a day", async () => {
+    env.ABSTRACT_API_KEY = "KEY";
+    for (let i = 0; i < 7; i++) await call({ body: { email: `u${i}@example.com` }, ip: `198.51.100.${10 + i}` });
+    expect(fetchSpy).toHaveBeenCalledTimes(5);
   });
 });
