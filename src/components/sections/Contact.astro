@@ -227,19 +227,18 @@ const label = "mb-2 block text-sm text-muted";
       picker.dispatchEvent(new CustomEvent("dtp:validate"));
       if (picker.dataset.valid !== "true") return;
 
-      // "YYYY-MM-DDTHH:MM" without a zone parses as the visitor's local time.
       // The picker's date and time are Central Time (business hours).
       const start = zonedTimeToUtc(dateInput.value, timeInput.value, BUSINESS_TZ);
       const end = new Date(start.getTime() + CALL_MINUTES * 60_000);
       const visitorTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const central = `${formatDate(start, BUSINESS_TZ)} at ${formatTime(start, BUSINESS_TZ)} ${zoneAbbreviation(start, BUSINESS_TZ)}`;
+      const centralDay = `${formatDate(start, BUSINESS_TZ)} at ${formatTime(start, BUSINESS_TZ)}`;
       const local = differsFrom(start, BUSINESS_TZ, visitorTz)
         ? `${formatTime(start, visitorTz)} ${zoneAbbreviation(start, visitorTz)} your time`
         : "";
-      const when = local ? `${central} (${local})` : central;
-      // What the notification email shows: Central time, the visitor's local time if different, and UTC.
+      // Visitors see "CT"; the notification email keeps the exact zone (CDT/CST) plus UTC.
+      const when = `${centralDay} CT` + (local ? ` (${local})` : "");
       form.querySelector<HTMLInputElement>('input[name="requested_time"]')!.value =
-        `${central}` +
+        `${centralDay} ${zoneAbbreviation(start, BUSINESS_TZ)}` +
         (local ? ` / visitor: ${formatTime(start, visitorTz)} ${zoneAbbreviation(start, visitorTz)}` : "") +
         ` (${start.toISOString()})`;
 
