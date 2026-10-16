@@ -136,15 +136,7 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
 </style>
 
 <script>
-  import {
-    BUSINESS_TZ,
-    differsFrom,
-    formatDate,
-    formatTime,
-    todayIn,
-    zonedTimeToUtc,
-    zoneAbbreviation,
-  } from "../lib/timezone";
+  import { BUSINESS_TZ, differsFrom, formatDate, formatTime, todayIn, zonedTimeToUtc } from "../lib/timezone";
 
   const pad = (n: number) => String(n).padStart(2, "0");
   // Calendar days are plain dates (local Date objects used only for y/m/d arithmetic).
@@ -173,15 +165,15 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
     const slots: string[] = JSON.parse(root.dataset.slots ?? "[]");
     const visitorTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const slotInstant = (date: Date, slot: string) => zonedTimeToUtc(toValue(date), slot, BUSINESS_TZ);
-    const centralLabel = (instant: Date) =>
-      `${formatTime(instant, BUSINESS_TZ)} ${zoneAbbreviation(instant, BUSINESS_TZ)}`;
+    // "CT" (Central Time) rather than CDT/CST: correct all year and familiar for scheduling.
+    const centralLabel = (instant: Date) => `${formatTime(instant, BUSINESS_TZ)} CT`;
     const localLabel = (instant: Date) =>
       differsFrom(instant, BUSINESS_TZ, visitorTz) ? `${formatTime(instant, visitorTz)} your time` : "";
 
     const tzNote = $("[data-dtp-tz]");
     const renderTzNote = (instant: Date) => {
       tzNote.textContent =
-        `Weekdays only. Times are Central Time (${zoneAbbreviation(instant, BUSINESS_TZ)})` +
+        "Weekdays only. Times are Central Time (CT)" +
         (differsFrom(instant, BUSINESS_TZ, visitorTz) ? `, with your local time (${visitorTz}) underneath.` : ".");
     };
     renderTzNote(new Date());

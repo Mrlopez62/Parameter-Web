@@ -36,10 +36,10 @@ test.describe("date and time picker", () => {
     await expect(dialog.getByRole("button", { name: "Thursday, October 15" })).toBeEnabled();
     await expect(dialog.getByRole("button", { name: "Saturday, October 17" })).toBeDisabled();
     await expect(dialog.getByRole("button", { name: "Sunday, October 18" })).toBeDisabled();
-    await expect(dialog).toContainText("Times are Central Time (CDT).");
+    await expect(dialog).toContainText("Times are Central Time (CT).");
     // Visitors already in Central Time don't get a second "your time" line.
     await dialog.getByRole("button", { name: "Tuesday, October 20" }).click();
-    await expect(dialog.getByRole("button", { name: "10:00 AM CDT" })).toHaveText("10:00 AM CDT");
+    await expect(dialog.getByRole("button", { name: "10:00 AM CT" })).toHaveText("10:00 AM CT");
   });
 
   test("shows the chosen slot and closes", async ({ page }) => {
@@ -126,7 +126,8 @@ test.describe("discovery call form", () => {
     expect(data.get("requested_time")).toContain("2026-10-20T15:00:00.000Z"); // 10:00 CDT
     expect(data.get("company_website")).toBe(""); // honeypot left empty
 
-    await expect(page.getByText("Tuesday, October 20 at 10:00 AM CDT")).toBeVisible();
+    await expect(page.getByText("Tuesday, October 20 at 10:00 AM CT")).toBeVisible();
+    expect(data.get("requested_time")).toMatch(/^Tuesday, October 20 at 10:00 AM CDT /); // email keeps the exact zone
 
     // Calendar links carry the same time, in UTC.
     const google = new URL((await page.getByRole("link", { name: "Google Calendar" }).getAttribute("href"))!);
@@ -305,18 +306,18 @@ test.describe("visitor in another time zone", () => {
 
     await page.locator("#cf-when").click();
     const dialog = page.getByRole("dialog", { name: "Choose a date and time" });
-    await expect(dialog).toContainText("Times are Central Time (CDT), with your local time (America/Los_Angeles)");
+    await expect(dialog).toContainText("Times are Central Time (CT), with your local time (America/Los_Angeles)");
     await dialog.getByRole("button", { name: "Tuesday, October 20" }).click();
 
     // First slot is 9 AM Central = 7 AM Pacific.
-    const nineAm = dialog.getByRole("button", { name: "9:00 AM CDT, 7:00 AM your time" });
+    const nineAm = dialog.getByRole("button", { name: "9:00 AM CT, 7:00 AM your time" });
     await expect(nineAm).toBeVisible();
-    await dialog.getByRole("button", { name: "10:00 AM CDT, 8:00 AM your time" }).click();
-    await expect(page.locator("#cf-when")).toContainText("Tue, Oct 20 · 10:00 AM CDT (8:00 AM your time)");
+    await dialog.getByRole("button", { name: "10:00 AM CT, 8:00 AM your time" }).click();
+    await expect(page.locator("#cf-when")).toContainText("Tue, Oct 20 · 10:00 AM CT (8:00 AM your time)");
 
     await fillDetails(page);
     await page.getByRole("button", { name: "Request discovery call" }).click();
-    await expect(page.getByText("Tuesday, October 20 at 10:00 AM CDT (8:00 AM PDT your time)")).toBeVisible();
+    await expect(page.getByText("Tuesday, October 20 at 10:00 AM CT (8:00 AM PDT your time)")).toBeVisible();
 
     const data = new URLSearchParams(body);
     expect(data.get("date")).toBe("2026-10-20");
@@ -331,13 +332,13 @@ test.describe("visitor in another time zone", () => {
     expect(google.searchParams.get("dates")).toBe("20261020T150000Z/20261020T153000Z");
   });
 
-  test("after daylight saving ends, Central shows as CST", async ({ page }) => {
+  test("after daylight saving ends, CT slots still map to the right local time", async ({ page }) => {
     await page.clock.setFixedTime(new Date("2026-10-30T10:00:00-05:00"));
     await page.goto("/#contact");
     await page.locator("#cf-when").click();
     const dialog = page.getByRole("dialog", { name: "Choose a date and time" });
     await dialog.getByRole("button", { name: "Next month" }).click();
     await dialog.getByRole("button", { name: "Tuesday, November 3" }).click();
-    await expect(dialog.getByRole("button", { name: "10:00 AM CST, 8:00 AM your time" })).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "10:00 AM CT, 8:00 AM your time" })).toBeVisible();
   });
 });
