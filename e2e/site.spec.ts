@@ -103,12 +103,13 @@ test.describe("other pages", () => {
     const sitemap = await (await request.get("/sitemap-0.xml")).text();
     expect(sitemap).toContain("<loc>https://parameter.digital/</loc>");
     expect(sitemap).toContain("<loc>https://parameter.digital/privacy/</loc>");
+    expect(sitemap).toContain("<loc>https://parameter.digital/roofing/</loc>");
     expect(sitemap).not.toContain("404");
   });
 });
 
 test.describe("accessibility (axe, WCAG 2.1 AA)", () => {
-  for (const path of ["/", "/privacy/", "/this-page-does-not-exist"]) {
+  for (const path of ["/", "/privacy/", "/demo/", "/roofing/", "/this-page-does-not-exist"]) {
     test(`${path} has no detectable violations`, async ({ page }) => {
       // Reduced motion renders every animated element in its final state.
       await page.emulateMedia({ reducedMotion: "reduce" });

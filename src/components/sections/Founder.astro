@@ -1,0 +1,36 @@
+---
+import { site } from "../../data/site";
+import Container from "../Container.astro";
+
+// Swap the initials for a photo once there is one: put it in public/ and
+// replace the initials <div> with an <img> of the same size.
+const initials = site.founder
+  .split(" ")
+  .map((part) => part[0])
+  .join("");
+---
+
+<section id="about" class="scroll-mt-20 py-24 sm:py-32">
+  <Container>
+    <div
+      class="grid items-center gap-10 rounded-2xl bg-surface p-8 ring-1 ring-line sm:p-12 lg:grid-cols-[auto_1fr]"
+      data-reveal
+    >
+      <div
+        class="grid size-28 place-items-center rounded-full bg-brand/15 font-mono text-3xl text-brand-soft ring-1 ring-brand/40"
+        aria-hidden="true"
+      >
+        {initials}
+      </div>
+      <div>
+        <p class="font-mono text-xs tracking-[0.04em] text-brand-soft uppercase">Who you'll work with</p>
+        <h2 class="mt-4 text-3xl font-semibold sm:text-4xl">{site.founder}, founder</h2>
+        <p class="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+          I'm a software engineer based in {site.serviceArea}. When you work with {site.name}, you work with me: I map
+          how your team handles the work today, build the automation, and I'm the person you call if something needs
+          fixing. No account managers, no hand-offs.
+        </p>
+      </div>
+    </div>
+  </Container>
+</section>
