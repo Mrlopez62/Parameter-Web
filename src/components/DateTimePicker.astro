@@ -2,12 +2,12 @@
 /*
  * One field that opens a calendar pop-up: pick a weekday, then a time slot.
  * Writes the choice to hidden `date` (YYYY-MM-DD) and `time` (HH:MM) inputs,
- * both in the visitor's local time zone.
+ * both in Central Time (Parameter's business hours).
  */
 interface Props {
   id: string;
   label: string;
-  /** "HH:MM" 24-hour slots offered on every bookable day. */
+  /** "HH:MM" 24-hour slots, in Central Time (BUSINESS_TZ), offered on every bookable day. */
   slots: string[];
   /** How far ahead visitors can book. */
   maxDaysAhead?: number;
@@ -116,13 +116,13 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
         <p class="text-sm font-medium" data-dtp-day-label>
           Pick a day
         </p>
-        <div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-1" data-dtp-slots>
-          <p class="col-span-3 text-xs text-subtle sm:col-span-1">Available times will show here.</p>
+        <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-1" data-dtp-slots>
+          <p class="col-span-2 text-xs text-subtle sm:col-span-1">Available times will show here.</p>
         </div>
       </div>
     </div>
     <p class="mt-4 border-t border-line pt-3 text-xs text-subtle" data-dtp-tz>
-      Weekdays only. Times are in your time zone.
+      Weekdays only. Times are Central Time.
     </p>
   </div>
 </div>
@@ -136,11 +136,22 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
 </style>
 
 <script>
+  import {
+    BUSINESS_TZ,
+    differsFrom,
+    formatDate,
+    formatTime,
+    todayIn,
+    zonedTimeToUtc,
+    zoneAbbreviation,
+  } from "../lib/timezone";
+
   const pad = (n: number) => String(n).padStart(2, "0");
+  // Calendar days are plain dates (local Date objects used only for y/m/d arithmetic).
   const toValue = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  const slotLabel = (hhmm: string) => {
-    const [h, m] = hhmm.split(":").map(Number);
-    return `${((h + 11) % 12) + 1}:${pad(m)} ${h < 12 ? "AM" : "PM"}`;
+  const fromValue = (v: string) => {
+    const [y, m, d] = v.split("-").map(Number);
+    return new Date(y, m - 1, d);
   };
 
   document.querySelectorAll<HTMLElement>("[data-dtp]").forEach((root) => {
@@ -158,13 +169,25 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
     const prevBtn = $<HTMLButtonElement>("[data-dtp-prev]");
     const nextBtn = $<HTMLButtonElement>("[data-dtp-next]");
 
+    // Slots are business hours in Central Time; visitors elsewhere also see their own time.
     const slots: string[] = JSON.parse(root.dataset.slots ?? "[]");
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    $("[data-dtp-tz]").textContent = `Weekdays only. Times are in your time zone (${tz}).`;
+    const visitorTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const slotInstant = (date: Date, slot: string) => zonedTimeToUtc(toValue(date), slot, BUSINESS_TZ);
+    const centralLabel = (instant: Date) =>
+      `${formatTime(instant, BUSINESS_TZ)} ${zoneAbbreviation(instant, BUSINESS_TZ)}`;
+    const localLabel = (instant: Date) =>
+      differsFrom(instant, BUSINESS_TZ, visitorTz) ? `${formatTime(instant, visitorTz)} your time` : "";
 
-    // Bookable range: tomorrow through maxDays ahead, in the visitor's local date.
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const tzNote = $("[data-dtp-tz]");
+    const renderTzNote = (instant: Date) => {
+      tzNote.textContent =
+        `Weekdays only. Times are Central Time (${zoneAbbreviation(instant, BUSINESS_TZ)})` +
+        (differsFrom(instant, BUSINESS_TZ, visitorTz) ? `, with your local time (${visitorTz}) underneath.` : ".");
+    };
+    renderTzNote(new Date());
+
+    // Bookable range: tomorrow through maxDays ahead, by the calendar date in Central Time.
+    const today = fromValue(todayIn(BUSINESS_TZ));
     const minDate = new Date(today);
     minDate.setDate(minDate.getDate() + 1);
     const maxDate = new Date(today);
@@ -176,7 +199,7 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
     const isBookable = (d: Date) => d >= minDate && d <= maxDate && d.getDay() !== 0 && d.getDay() !== 6;
 
     function renderMonth() {
-      monthEl.textContent = view.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+      monthEl.textContent = view.toLocaleDateString("en-US", { month: "long", year: "numeric" });
       prevBtn.disabled = view <= new Date(minDate.getFullYear(), minDate.getMonth(), 1);
       nextBtn.disabled = new Date(view.getFullYear(), view.getMonth() + 1, 1) > maxDate;
 
@@ -193,7 +216,7 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
         btn.disabled = !isBookable(date);
         btn.setAttribute(
           "aria-label",
-          date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }),
+          date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
         );
         btn.setAttribute("aria-pressed", String(selected));
         btn.className = selected
@@ -213,22 +236,35 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
       slotsEl.replaceChildren();
       if (!selectedDate) {
         const hint = document.createElement("p");
-        hint.className = "col-span-3 text-xs text-subtle sm:col-span-1";
+        hint.className = "col-span-2 text-xs text-subtle sm:col-span-1";
         hint.textContent = "Choose a weekday to see available times.";
         slotsEl.append(hint);
         return;
       }
-      dayLabelEl.textContent = selectedDate.toLocaleDateString(undefined, {
+      dayLabelEl.textContent = selectedDate.toLocaleDateString("en-US", {
         weekday: "short",
         month: "short",
         day: "numeric",
       });
+      renderTzNote(slotInstant(selectedDate, slots[0] ?? "12:00"));
 
       const chosenTime = dateInput.value === toValue(selectedDate) ? timeInput.value : "";
       for (const slot of slots) {
+        const instant = slotInstant(selectedDate, slot);
+        const local = localLabel(instant);
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.textContent = slotLabel(slot);
+        const main = document.createElement("span");
+        main.className = "block";
+        main.textContent = centralLabel(instant);
+        btn.append(main);
+        if (local) {
+          const sub = document.createElement("span");
+          sub.className = "mt-0.5 block text-[11px] font-normal opacity-70";
+          sub.textContent = local;
+          btn.append(sub);
+          btn.setAttribute("aria-label", `${centralLabel(instant)}, ${local}`);
+        }
         btn.setAttribute("aria-pressed", String(slot === chosenTime));
         btn.className =
           slot === chosenTime
@@ -242,8 +278,10 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
     function choose(slot: string) {
       dateInput.value = toValue(selectedDate!);
       timeInput.value = slot;
-      const start = new Date(`${dateInput.value}T${slot}`);
-      valueEl.textContent = `${start.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} · ${slotLabel(slot)}`;
+      const start = slotInstant(selectedDate!, slot);
+      const local = localLabel(start);
+      valueEl.textContent =
+        `${formatDate(start, BUSINESS_TZ, true)} · ${centralLabel(start)}` + (local ? ` (${local})` : "");
       valueEl.classList.replace("text-subtle", "text-fg");
       errorEl.classList.add("hidden");
       trigger.removeAttribute("aria-invalid");

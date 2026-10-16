@@ -192,6 +192,14 @@ const label = "mb-2 block text-sm text-muted";
 <script>
   import { googleCalendarUrl, icsFile, outlookCalendarUrl, type CalendarEvent } from "../../lib/calendar";
   import { attachEmailVerification } from "../../scripts/email-verify";
+  import {
+    BUSINESS_TZ,
+    differsFrom,
+    formatDate,
+    formatTime,
+    zonedTimeToUtc,
+    zoneAbbreviation,
+  } from "../../lib/timezone";
 
   const CALL_MINUTES = 30;
   const EMAIL = "hello@parameter.digital";
@@ -220,18 +228,20 @@ const label = "mb-2 block text-sm text-muted";
       if (picker.dataset.valid !== "true") return;
 
       // "YYYY-MM-DDTHH:MM" without a zone parses as the visitor's local time.
-      const start = new Date(`${dateInput.value}T${timeInput.value}`);
+      // The picker's date and time are Central Time (business hours).
+      const start = zonedTimeToUtc(dateInput.value, timeInput.value, BUSINESS_TZ);
       const end = new Date(start.getTime() + CALL_MINUTES * 60_000);
-      // dateStyle/timeStyle can't be combined with timeZoneName, so spell out the parts.
-      const when = new Intl.DateTimeFormat(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        timeZoneName: "short",
-      }).format(start);
-      form.querySelector<HTMLInputElement>('input[name="requested_time"]')!.value = `${when} (${start.toISOString()})`;
+      const visitorTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const central = `${formatDate(start, BUSINESS_TZ)} at ${formatTime(start, BUSINESS_TZ)} ${zoneAbbreviation(start, BUSINESS_TZ)}`;
+      const local = differsFrom(start, BUSINESS_TZ, visitorTz)
+        ? `${formatTime(start, visitorTz)} ${zoneAbbreviation(start, visitorTz)} your time`
+        : "";
+      const when = local ? `${central} (${local})` : central;
+      // What the notification email shows: Central time, the visitor's local time if different, and UTC.
+      form.querySelector<HTMLInputElement>('input[name="requested_time"]')!.value =
+        `${central}` +
+        (local ? ` / visitor: ${formatTime(start, visitorTz)} ${zoneAbbreviation(start, visitorTz)}` : "") +
+        ` (${start.toISOString()})`;
 
       const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
       button.disabled = true;
