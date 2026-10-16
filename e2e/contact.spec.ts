@@ -36,7 +36,10 @@ test.describe("date and time picker", () => {
     await expect(dialog.getByRole("button", { name: "Thursday, October 15" })).toBeEnabled();
     await expect(dialog.getByRole("button", { name: "Saturday, October 17" })).toBeDisabled();
     await expect(dialog.getByRole("button", { name: "Sunday, October 18" })).toBeDisabled();
-    await expect(dialog).toContainText("America/Chicago");
+    await expect(dialog).toContainText("Times are Central Time (CDT).");
+    // Visitors already in Central Time don't get a second "your time" line.
+    await dialog.getByRole("button", { name: "Tuesday, October 20" }).click();
+    await expect(dialog.getByRole("button", { name: "10:00 AM CDT" })).toHaveText("10:00 AM CDT");
   });
 
   test("shows the chosen slot and closes", async ({ page }) => {
@@ -281,5 +284,60 @@ test.describe("mailbox check (Abstract API, when configured)", () => {
     await page.getByLabel("Email").blur();
     await expect(page.locator("#cf-email-status")).toHaveText("✓ Email looks good");
     expect(await page.getByLabel("Email").evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(true);
+  });
+});
+
+test.describe("visitor in another time zone", () => {
+  test.use({ timezoneId: "America/Los_Angeles" });
+
+  test("slots are Central business hours, with the visitor's local time underneath", async ({ page }) => {
+    await page.clock.setFixedTime(new Date("2026-10-14T10:00:00-05:00"));
+    let body = "";
+    await page.route(
+      (url) => url.pathname === "/",
+      async (route) => {
+        if (route.request().method() !== "POST") return route.continue();
+        body = route.request().postData() ?? "";
+        await route.fulfill({ status: 200, body: "ok" });
+      },
+    );
+    await page.goto("/#contact");
+
+    await page.locator("#cf-when").click();
+    const dialog = page.getByRole("dialog", { name: "Choose a date and time" });
+    await expect(dialog).toContainText("Times are Central Time (CDT), with your local time (America/Los_Angeles)");
+    await dialog.getByRole("button", { name: "Tuesday, October 20" }).click();
+
+    // First slot is 9 AM Central = 7 AM Pacific.
+    const nineAm = dialog.getByRole("button", { name: "9:00 AM CDT, 7:00 AM your time" });
+    await expect(nineAm).toBeVisible();
+    await dialog.getByRole("button", { name: "10:00 AM CDT, 8:00 AM your time" }).click();
+    await expect(page.locator("#cf-when")).toContainText("Tue, Oct 20 · 10:00 AM CDT (8:00 AM your time)");
+
+    await fillDetails(page);
+    await page.getByRole("button", { name: "Request discovery call" }).click();
+    await expect(page.getByText("Tuesday, October 20 at 10:00 AM CDT (8:00 AM PDT your time)")).toBeVisible();
+
+    const data = new URLSearchParams(body);
+    expect(data.get("date")).toBe("2026-10-20");
+    expect(data.get("time")).toBe("10:00"); // Central
+    expect(data.get("timezone")).toBe("America/Los_Angeles");
+    expect(data.get("requested_time")).toBe(
+      "Tuesday, October 20 at 10:00 AM CDT / visitor: 8:00 AM PDT (2026-10-20T15:00:00.000Z)",
+    );
+
+    // Calendar links use the same instant.
+    const google = new URL((await page.getByRole("link", { name: "Google Calendar" }).getAttribute("href"))!);
+    expect(google.searchParams.get("dates")).toBe("20261020T150000Z/20261020T153000Z");
+  });
+
+  test("after daylight saving ends, Central shows as CST", async ({ page }) => {
+    await page.clock.setFixedTime(new Date("2026-10-30T10:00:00-05:00"));
+    await page.goto("/#contact");
+    await page.locator("#cf-when").click();
+    const dialog = page.getByRole("dialog", { name: "Choose a date and time" });
+    await dialog.getByRole("button", { name: "Next month" }).click();
+    await dialog.getByRole("button", { name: "Tuesday, November 3" }).click();
+    await expect(dialog.getByRole("button", { name: "10:00 AM CST, 8:00 AM your time" })).toBeVisible();
   });
 });
