@@ -21,13 +21,13 @@ import SectionHeader from "../SectionHeader.astro";
 const steps = [
   { title: "Enquiry arrives", body: "From your website, inbox, or a missed call.", human: false },
   { title: "Details captured", body: "Checked for missing info and duplicates.", human: false },
-  { title: "Quick reply", body: "An acknowledgement goes out right away.", human: false },
+  { title: "Quick reply", body: "An acknowledgement you've approved goes out right away.", human: false },
   { title: "Routed to the right person", body: "Urgent or unusual requests go straight to your team.", human: true },
   { title: "Followed up until booked", body: "Polite reminders, and a heads-up if someone needs a call.", human: true },
 ];
 
 // Examples of common small-business tools. Logos from Simple Icons (CC0); the
-// brands are trademarks of their owners, shown to indicate compatibility only.
+// brands are trademarks of their owners, shown as examples only.
 const tools = [
   siGmail,
   siGooglecalendar,
@@ -103,7 +103,7 @@ const logoColor = (hex: string) =>
 
     <div class="mt-16 rounded-2xl bg-surface/60 p-6 ring-1 ring-line sm:p-8" data-reveal>
       <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <h3 class="text-xl font-semibold">Works with the tools you already use</h3>
+        <h3 class="text-xl font-semibold">Built around tools like these</h3>
         <p class="text-sm text-muted">Don't see yours? Ask us on the discovery call.</p>
       </div>
       <ul class="mt-6 flex flex-wrap gap-2">
@@ -121,8 +121,8 @@ const logoColor = (hex: string) =>
       </ul>
       <p class="mt-5 text-sm text-muted">Also {moreTools.join(", ")}, and more.</p>
       <p class="mt-6 text-xs text-subtle">
-        Product names and logos are trademarks of their respective owners, shown to indicate compatibility. No
-        endorsement or partnership is implied.
+        Product names and logos are trademarks of their respective owners, shown as examples of tools we build around.
+        No endorsement or partnership is implied.
       </p>
     </div>
   </Container>
