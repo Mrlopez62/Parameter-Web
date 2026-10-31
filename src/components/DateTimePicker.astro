@@ -178,10 +178,12 @@ const { id, label, slots, maxDaysAhead = 60 } = Astro.props;
     };
     renderTzNote(new Date());
 
-    // Bookable range: tomorrow through maxDays ahead, by the calendar date in Central Time.
+    // Bookable range: the next weekday through maxDays ahead, by the calendar date in Central Time.
     const today = fromValue(todayIn(BUSINESS_TZ));
     const minDate = new Date(today);
     minDate.setDate(minDate.getDate() + 1);
+    // Start on a weekday, so the calendar never opens on a month with nothing to book.
+    while (minDate.getDay() === 0 || minDate.getDay() === 6) minDate.setDate(minDate.getDate() + 1);
     const maxDate = new Date(today);
     maxDate.setDate(maxDate.getDate() + Number(root.dataset.maxDays ?? 60));
 
