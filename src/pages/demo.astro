@@ -1,0 +1,314 @@
+---
+import Button from "../components/Button.astro";
+import Container from "../components/Container.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { DEFAULT_COMPANY, LIMITS, SERVICES } from "../lib/lead-triage";
+
+// Sample enquiries, so a prospect on a call can run the demo in one click.
+const samples = [
+  {
+    label: "Active leak",
+    name: "Dana Lee",
+    phone: "(214) 555-0143",
+    address: "",
+    service: "Repair",
+    message:
+      "Water is dripping through the ceiling in our upstairs bedroom since last night's storm. Can someone come out?",
+  },
+  {
+    label: "Hail damage",
+    name: "Marcus Hill",
+    phone: "",
+    address: "Frisco, TX",
+    service: "Storm or hail damage",
+    message:
+      "Neighbors are all getting new roofs after the hail in April. Our adjuster hasn't come out yet. Can you inspect?",
+  },
+  {
+    label: "Replacement quote",
+    name: "Priya Shah",
+    phone: "(817) 555-0198",
+    address: "Arlington, TX",
+    service: "Replacement",
+    message: "Roof is about 20 years old. Looking for a quote on a replacement sometime this winter.",
+  },
+];
+
+const field =
+  "w-full rounded-xl bg-bg px-4 py-3 text-sm text-fg ring-1 ring-line placeholder:text-subtle transition-shadow focus:ring-brand-soft focus:outline-none";
+const label = "mb-2 block text-sm text-muted";
+---
+
+<BaseLayout
+  title="Live demo: instant lead response for roofers"
+  description="Submit a sample roofing enquiry and see what the homeowner and your office get within seconds: an instant reply, a triaged alert, and follow-ups until it's booked."
+>
+  <section class="relative overflow-hidden pt-32 pb-24 sm:pt-40">
+    <div class="glow absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="grid-bg absolute inset-0 -z-10" aria-hidden="true"></div>
+
+    <Container>
+      <div class="max-w-2xl">
+        <p class="font-mono text-xs tracking-[0.04em] text-brand-soft uppercase">Live demo</p>
+        <h1 class="mt-4 text-4xl leading-[1.05] font-semibold sm:text-6xl">
+          What happens <span class="text-brand-soft">60 seconds</span> after a homeowner reaches out?
+        </h1>
+        <p class="mt-6 text-lg leading-relaxed text-muted">
+          Play the homeowner. Send a sample enquiry and see what they get back, what your office sees, and what happens
+          if nobody books it. Nothing is sent to anyone; this runs on this page.
+        </p>
+      </div>
+
+      <div class="mt-14 grid gap-6 lg:grid-cols-2">
+        <div class="rounded-2xl bg-surface p-6 ring-1 ring-line sm:p-8">
+          <h2 class="text-xl font-semibold">1. The homeowner's enquiry</h2>
+
+          <div class="mt-5 flex flex-wrap gap-2" role="group" aria-label="Fill in a sample enquiry">
+            {samples.map((s, i) => (
+              <button
+                type="button"
+                class="rounded-full bg-surface-2 px-3 py-1.5 text-xs text-fg ring-1 ring-line hover:bg-line"
+                data-sample={i}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          <form class="mt-6 grid gap-4" data-demo-form>
+            <div>
+              <label for="demo-company" class={label}>
+                Roofing company (yours, if you like)
+              </label>
+              <input
+                id="demo-company"
+                name="company"
+                maxlength={LIMITS.company}
+                placeholder={DEFAULT_COMPANY}
+                class={field}
+              />
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="demo-name" class={label}>
+                  Homeowner name
+                </label>
+                <input id="demo-name" name="name" required maxlength={LIMITS.name} class={field} />
+              </div>
+              <div>
+                <label for="demo-phone" class={label}>
+                  Phone <span class="text-subtle">(optional)</span>
+                </label>
+                <input id="demo-phone" name="phone" type="tel" maxlength={LIMITS.phone} class={field} />
+              </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="demo-address" class={label}>
+                  Address <span class="text-subtle">(optional)</span>
+                </label>
+                <input id="demo-address" name="address" maxlength={LIMITS.address} class={field} />
+              </div>
+              <div>
+                <label for="demo-service" class={label}>
+                  Service
+                </label>
+                <select id="demo-service" name="service" class={field}>
+                  {SERVICES.map((s) => (
+                    <option value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label for="demo-message" class={label}>
+                What's going on?
+              </label>
+              <textarea
+                id="demo-message"
+                name="message"
+                rows="4"
+                required
+                maxlength={LIMITS.message}
+                class={field}
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="rounded-full bg-brand px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
+            >
+              Send enquiry
+            </button>
+          </form>
+        </div>
+
+        <div class="grid content-start gap-6" aria-live="polite" data-demo-results>
+          <div class="rounded-2xl bg-surface p-6 ring-1 ring-line sm:p-8" data-step="reply">
+            <div class="flex items-center justify-between gap-4">
+              <h2 class="text-xl font-semibold">2. The homeowner's instant reply</h2>
+              <span class="font-mono text-xs text-subtle" data-reply-time></span>
+            </div>
+            <p class="mt-2 text-sm text-muted">
+              A message your team approved in advance. No AI writes to your customers.
+            </p>
+            <p class="mt-5 rounded-2xl rounded-bl-sm bg-brand/15 p-4 text-sm leading-relaxed text-fg" data-reply>
+              Send an enquiry to see it.
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-surface p-6 ring-1 ring-line sm:p-8" data-step="alert">
+            <div class="flex items-center justify-between gap-4">
+              <h2 class="text-xl font-semibold">3. Your office's alert</h2>
+              <span class="font-mono text-xs text-subtle" data-alert-source></span>
+            </div>
+            <div class="mt-5 hidden space-y-4 text-sm" data-alert>
+              <p>
+                <span class="rounded-full px-2.5 py-1 font-mono text-xs" data-priority></span>
+                <span class="ml-2 text-subtle">Suggested priority; your team confirms</span>
+              </p>
+              <p class="leading-relaxed text-fg" data-summary></p>
+              <div data-missing-wrap>
+                <p class="font-mono text-xs tracking-[0.04em] text-subtle uppercase">Still needed</p>
+                <ul class="mt-2 list-inside list-disc text-muted" data-missing></ul>
+              </div>
+              <div>
+                <p class="font-mono text-xs tracking-[0.04em] text-subtle uppercase">Ask on the callback</p>
+                <ul class="mt-2 list-inside list-disc text-muted" data-questions></ul>
+              </div>
+            </div>
+            <p class="mt-5 text-sm text-muted" data-alert-empty>
+              Send an enquiry to see it.
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-surface p-6 ring-1 ring-line sm:p-8" data-step="followup">
+            <h2 class="text-xl font-semibold">4. If nobody books it</h2>
+            <ol class="mt-5 space-y-3 text-sm" data-followups>
+              <li class="text-muted">Send an enquiry to see it.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-14 rounded-2xl bg-brand/10 p-8 ring-1 ring-brand/50 sm:flex sm:items-center sm:justify-between sm:gap-8">
+        <div>
+          <h2 class="text-2xl font-semibold">Want this running on your website and phone line?</h2>
+          <p class="mt-2 text-muted">
+            We set it up inside the tools you already use, measure your response times before and after, and your team
+            stays in charge.
+          </p>
+        </div>
+        <Button href="/roofing/#contact" class="mt-6 shrink-0 sm:mt-0">
+          Book a free 30-minute call
+        </Button>
+      </div>
+    </Container>
+  </section>
+  <script type="application/json" data-samples set:html={JSON.stringify(samples)} />
+</BaseLayout>
+
+<script>
+  import { acknowledgment, followUpPlan, parseLead, triageByRules, type Triage } from "../lib/lead-triage";
+
+  const samples = JSON.parse(document.querySelector("[data-samples]")?.textContent ?? "null");
+  const form = document.querySelector<HTMLFormElement>("[data-demo-form]")!;
+  const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+
+  // Personalised links from outreach: /demo/?company=Smith%20Roofing
+  const company = new URLSearchParams(location.search).get("company");
+  if (company) (form.elements.namedItem("company") as HTMLInputElement).value = company.slice(0, 80);
+
+  document.querySelectorAll<HTMLButtonElement>("[data-sample]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const sample = (samples as Record<string, string>[])[Number(button.dataset.sample)];
+      for (const key of ["name", "phone", "address", "service", "message"]) {
+        (form.elements.namedItem(key) as HTMLInputElement).value = sample[key];
+      }
+    });
+  });
+
+  const PRIORITY_STYLE: Record<Triage["priority"], [string, string]> = {
+    urgent: ["Urgent", "bg-warning/15 text-warning"],
+    high: ["High", "bg-brand/15 text-brand-soft"],
+    normal: ["Normal", "bg-success/15 text-success"],
+  };
+
+  const fillList = (el: HTMLElement, items: string[]) =>
+    el.replaceChildren(
+      ...items.map((text) => {
+        const li = document.createElement("li");
+        li.textContent = text;
+        return li;
+      }),
+    );
+
+  async function fetchTriage(payload: Record<string, string>, lead: NonNullable<ReturnType<typeof parseLead>>) {
+    if (import.meta.env.DEV) return triageByRules(lead); // Functions don't run under astro dev.
+    try {
+      const res = await fetch("/api/triage-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      return (await res.json()) as Triage;
+    } catch {
+      return triageByRules(lead);
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+    const payload = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    const lead = parseLead(payload);
+    if (!lead) return;
+
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    button.disabled = true;
+    const started = performance.now();
+
+    // Step 2: the approved reply goes out immediately, before triage finishes.
+    // Urgent wording is chosen by the rules so the reply never waits on the AI.
+    const quick = triageByRules(lead);
+    $("[data-reply]").textContent = acknowledgment(lead, quick.priority);
+    $("[data-reply-time]").textContent = `sent in ${((performance.now() - started) / 1000).toFixed(1)}s`;
+
+    $("[data-alert-empty]").textContent = "Summarising the enquiry…";
+    $("[data-alert-empty]").classList.remove("hidden");
+    $("[data-alert]").classList.add("hidden");
+
+    const triage = await fetchTriage(payload, lead);
+    const [text, style] = PRIORITY_STYLE[triage.priority];
+    const badge = $("[data-priority]");
+    badge.textContent = text;
+    badge.className = `rounded-full px-2.5 py-1 font-mono text-xs ${style}`;
+    $("[data-summary]").textContent = triage.summary;
+    fillList($("[data-missing]"), triage.missing);
+    $("[data-missing-wrap]").classList.toggle("hidden", triage.missing.length === 0);
+    fillList($("[data-questions]"), triage.questions);
+    $("[data-alert-source]").textContent =
+      `${triage.source === "ai" ? "AI summary" : "Rules"} · ${((performance.now() - started) / 1000).toFixed(1)}s`;
+    $("[data-alert-empty]").classList.add("hidden");
+    $("[data-alert]").classList.remove("hidden");
+
+    // Step 4: follow-up plan.
+    $("[data-followups]").replaceChildren(
+      ...followUpPlan(triage.priority).map((step) => {
+        const li = document.createElement("li");
+        li.className = "flex gap-4";
+        const when = document.createElement("span");
+        when.className = "w-16 shrink-0 font-mono text-xs text-subtle";
+        when.textContent = step.when;
+        const action = document.createElement("span");
+        action.className = step.human ? "text-fg" : "text-muted";
+        action.textContent = step.human ? `${step.action} (person)` : step.action;
+        li.append(when, action);
+        return li;
+      }),
+    );
+
+    button.disabled = false;
+    button.textContent = "Send another";
+  });
+</script>

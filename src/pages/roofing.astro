@@ -1,0 +1,122 @@
+---
+import Button from "../components/Button.astro";
+import Container from "../components/Container.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import Contact from "../components/sections/Contact.astro";
+import Founder from "../components/sections/Founder.astro";
+import Workflow from "../components/sections/Workflow.astro";
+import { site } from "../data/site";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+// Landing page for roofing outreach. Copy follows the roofing playbook in the
+// Parameter company docs: lead intake to booked inspection only, people make
+// every judgment call, and no claims about results we haven't measured yet.
+const questions = [
+  "How many web forms and missed calls came in after 5pm last week, and when did each get a call back?",
+  "When a homeowner doesn't answer the first call, who follows up, and how do they know to?",
+  "During hail season, does anything fall through the cracks when the phones don't stop?",
+];
+
+const stays = [
+  "Deciding what's urgent, and who goes out",
+  "Anything about roof condition, safety, or price",
+  "Insurance and claim conversations",
+  "Every message that isn't a pre-approved reply",
+];
+
+const pilot = [
+  "Your website form, inbox, and missed calls feed one list",
+  "An instant reply you've approved, day or night",
+  "A short summary and suggested priority for your office",
+  "Reminders until every enquiry has a next step",
+  "Response times measured before and after, in a monthly report",
+];
+---
+
+<BaseLayout
+  title="Instant lead response for roofing contractors"
+  description={`Every roofing enquiry gets an instant reply and a next step, even after hours. Set up in your existing tools by a ${site.serviceArea} engineer, with your team in control.`}
+>
+  <section class="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+    <div class="glow absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="grid-bg absolute inset-0 -z-10" aria-hidden="true"></div>
+    <Container>
+      <p class="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 font-mono text-xs text-muted ring-1 ring-line">
+        <span class="size-1.5 rounded-full bg-brand"></span>
+        For roofing contractors in {site.serviceArea}
+      </p>
+      <h1 class="mt-6 max-w-4xl text-4xl leading-[1.05] font-semibold sm:text-6xl">
+        Every roofing lead gets a reply in <span class="text-brand-soft">seconds</span>, not tomorrow morning.
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
+        Homeowners with a leak call the next roofer on the list. We connect your website, inbox, and phone so every
+        enquiry gets an instant reply, your office gets a clear summary, and nothing sits without a next step.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <Button href="/demo/">Try the 60-second demo</Button>
+        <Button href="#contact" variant="secondary">
+          Book a free 30-minute call
+        </Button>
+      </div>
+    </Container>
+  </section>
+
+  <section class="py-24 sm:py-32">
+    <Container class="grid gap-14 lg:grid-cols-2">
+      <SectionHeader
+        eyebrow="Sound familiar?"
+        title="Questions most roofing offices can't answer off the top of their head."
+        intro="If any of these make you pause, there's probably revenue leaking between the first enquiry and the inspection."
+      />
+      <ol class="space-y-4" data-reveal>
+        {questions.map((q, i) => (
+          <li class="flex gap-4 rounded-2xl bg-surface p-6 ring-1 ring-line">
+            <span class="font-mono text-sm text-brand-soft">{String(i + 1).padStart(2, "0")}</span>
+            <span class="text-fg">{q}</span>
+          </li>
+        ))}
+      </ol>
+    </Container>
+  </section>
+
+  <Workflow />
+
+  <section class="py-24 sm:py-32">
+    <Container class="grid gap-5 lg:grid-cols-2">
+      <article class="rounded-2xl bg-brand/10 p-8 ring-1 ring-brand/50" data-reveal>
+        <p class="font-mono text-xs text-brand-soft">Design-partner pilot</p>
+        <h2 class="mt-3 text-2xl font-semibold">One workflow, fixed price, about two weeks to go live</h2>
+        <p class="mt-3 text-sm text-muted">
+          I'm taking on a small number of {site.serviceArea} roofers as design partners this season, at a reduced pilot
+          price agreed in writing before any work starts.
+        </p>
+        <ul class="mt-6 space-y-3 text-sm">
+          {pilot.map((p) => (
+            <li class="flex gap-3">
+              <span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand"></span>
+              {p}
+            </li>
+          ))}
+        </ul>
+      </article>
+      <article class="rounded-2xl bg-surface p-8 ring-1 ring-line" data-reveal>
+        <p class="font-mono text-xs text-subtle">Stays with your team</p>
+        <h2 class="mt-3 text-2xl font-semibold">The automation handles the routine. You make the calls.</h2>
+        <ul class="mt-6 space-y-3 text-sm">
+          {stays.map((s) => (
+            <li class="flex gap-3">
+              <span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-success"></span>
+              {s}
+            </li>
+          ))}
+        </ul>
+        <p class="mt-6 text-sm text-muted">
+          You own the accounts, and every pilot includes a written plan for switching it off.
+        </p>
+      </article>
+    </Container>
+  </section>
+
+  <Founder />
+  <Contact source="roofing" />
+</BaseLayout>
