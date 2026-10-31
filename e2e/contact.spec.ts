@@ -42,6 +42,30 @@ test.describe("date and time picker", () => {
     await expect(dialog.getByRole("button", { name: "10:00 AM CT" })).toHaveText("10:00 AM CT");
   });
 
+  test("opens on the next month when this month has no bookable days left", async ({ page }) => {
+    // Friday 30 Oct: only Saturday 31 is left in October.
+    await page.clock.setFixedTime(new Date("2026-10-30T20:00:00-05:00"));
+    await page.goto("/#contact");
+    await page.locator("#cf-when").click();
+
+    const dialog = page.getByRole("dialog", { name: "Choose a date and time" });
+    await expect(dialog).toContainText("November 2026");
+    await expect(dialog.getByRole("button", { name: "Previous month" })).toBeDisabled();
+    await expect(dialog.getByRole("button", { name: "Monday, November 2", exact: true })).toBeEnabled();
+    await expect(dialog.getByRole("button", { name: "Monday, November 2", exact: true })).toBeFocused();
+  });
+
+  test("stays on this month while a weekday is still bookable", async ({ page }) => {
+    // Thursday 29 Oct: Friday 30 can still be booked.
+    await page.clock.setFixedTime(new Date("2026-10-29T10:00:00-05:00"));
+    await page.goto("/#contact");
+    await page.locator("#cf-when").click();
+
+    const dialog = page.getByRole("dialog", { name: "Choose a date and time" });
+    await expect(dialog).toContainText("October 2026");
+    await expect(dialog.getByRole("button", { name: "Friday, October 30" })).toBeEnabled();
+  });
+
   test("shows the chosen slot and closes", async ({ page }) => {
     await openContact(page);
     await pickTuesday10am(page);
@@ -337,7 +361,6 @@ test.describe("visitor in another time zone", () => {
     await page.goto("/#contact");
     await page.locator("#cf-when").click();
     const dialog = page.getByRole("dialog", { name: "Choose a date and time" });
-    await dialog.getByRole("button", { name: "Next month" }).click();
     await dialog.getByRole("button", { name: "Tuesday, November 3" }).click();
     await expect(dialog.getByRole("button", { name: "10:00 AM CT, 8:00 AM your time" })).toBeVisible();
   });
