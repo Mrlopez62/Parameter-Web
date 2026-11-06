@@ -1,0 +1,481 @@
+---
+import Container from "../components/Container.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+// Private dashboard for Joshua. Data comes from /api/stats behind STATS_PASSWORD;
+// this page itself holds nothing and stays out of search results and the sitemap.
+const field =
+  "w-full rounded-xl bg-bg px-4 py-3 text-sm text-fg ring-1 ring-line placeholder:text-subtle focus:ring-brand-soft focus:outline-none";
+const card = "rounded-2xl bg-surface p-6 ring-1 ring-line";
+const th = "pb-2 text-left font-mono text-xs font-normal tracking-[0.04em] text-subtle uppercase";
+---
+
+<BaseLayout title="Site stats" noindex analytics={false}>
+  <section class="pt-28 pb-24">
+    <Container>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="font-mono text-xs tracking-[0.04em] text-brand-soft uppercase">Private</p>
+          <h1 class="mt-3 text-3xl font-semibold sm:text-4xl">Site stats</h1>
+        </div>
+        <div class="hidden flex-wrap items-center gap-3" data-controls>
+          <label class="sr-only" for="stats-range">
+            Date range
+          </label>
+          <select
+            id="stats-range"
+            class="rounded-full bg-surface px-4 py-2 text-sm text-fg ring-1 ring-line"
+            data-range
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>
+              Last 30 days
+            </option>
+            <option value="90">Last 90 days</option>
+          </select>
+          <button
+            type="button"
+            class="rounded-full bg-surface-2 px-4 py-2 text-sm text-fg ring-1 ring-line hover:bg-line"
+            data-refresh
+          >
+            Refresh
+          </button>
+          <button type="button" class="rounded-full px-4 py-2 text-sm text-muted hover:text-fg" data-signout>
+            Sign out
+          </button>
+        </div>
+      </div>
+
+      <form class={`${card} mt-10 max-w-md`} data-login>
+        <label for="stats-password" class="mb-2 block text-sm text-muted">
+          Password
+        </label>
+        <input
+          id="stats-password"
+          type="password"
+          required
+          autocomplete="current-password"
+          class={field}
+          data-password
+        />
+        <button
+          type="submit"
+          class="mt-4 w-full rounded-full bg-brand px-5 py-3 text-sm font-medium text-white hover:bg-brand-hover"
+        >
+          Show stats
+        </button>
+        <p class="mt-3 hidden text-sm text-warning" role="alert" data-login-error></p>
+      </form>
+
+      <div class="mt-10 hidden space-y-6" data-dashboard aria-live="polite">
+        <p class="hidden rounded-xl bg-warning/10 p-4 text-sm text-warning" data-truncated>
+          There are more events than the dashboard reads at once, so these numbers are incomplete. Try a shorter range.
+        </p>
+
+        <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ["pageviews", "Page views"],
+            ["demoOpens", "Demo opens from your links"],
+            ["demoRuns", "Demo runs"],
+            ["callsRequested", "Call requests"],
+          ].map(([key, label]) => (
+            <div class={card}>
+              <dt class="text-sm text-muted">{label}</dt>
+              <dd class="mt-2 text-4xl font-semibold tracking-[-0.03em]" data-total={key}>
+                0
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div class={card}>
+          <h2 class="text-lg font-semibold">Demo activity by company</h2>
+          <p class="mt-1 text-sm text-muted">
+            Visits to <code class="font-mono text-xs">/demo/?company=…</code> links, and demos run with a company name.
+          </p>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr>
+                  <th class={th}>Company</th>
+                  <th class={`${th} text-right`}>Opens</th>
+                  <th class={`${th} text-right`}>Runs</th>
+                  <th class={`${th} text-right`}>Last seen</th>
+                </tr>
+              </thead>
+              <tbody data-companies></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class={card}>
+          <div class="flex items-baseline justify-between gap-4">
+            <h2 class="text-lg font-semibold">Page views per day</h2>
+            <p class="font-mono text-xs text-subtle" data-range-label></p>
+          </div>
+          <div class="relative mt-6" data-chart-wrap>
+            <svg class="block h-56 w-full overflow-visible" role="img" data-chart></svg>
+            <div
+              class="pointer-events-none absolute z-10 hidden -translate-x-1/2 -translate-y-full rounded-lg bg-surface-2 px-3 py-2 text-xs whitespace-nowrap text-fg shadow-lg ring-1 ring-line"
+              data-tooltip
+            ></div>
+          </div>
+          <details class="mt-4 text-sm">
+            <summary class="cursor-pointer text-muted hover:text-fg">Show as table</summary>
+            <table class="mt-3 w-full max-w-sm text-sm">
+              <thead>
+                <tr>
+                  <th class={th}>Day</th>
+                  <th class={`${th} text-right`}>Page views</th>
+                </tr>
+              </thead>
+              <tbody data-daily-table></tbody>
+            </table>
+          </details>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-3">
+          {[
+            ["topPages", "Top pages", "Page"],
+            ["topReferrers", "Where visitors come from", "Source"],
+            ["callsByPage", "Call requests by page", "Page"],
+          ].map(([key, title, column]) => (
+            <div class={card}>
+              <h2 class="text-lg font-semibold">{title}</h2>
+              <table class="mt-4 w-full text-sm">
+                <thead>
+                  <tr>
+                    <th class={th}>{column}</th>
+                    <th class={`${th} text-right`}>Count</th>
+                  </tr>
+                </thead>
+                <tbody data-list={key}></tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+
+        <label class="flex items-center gap-3 text-sm text-muted">
+          <input type="checkbox" class="size-4 accent-[var(--color-brand)]" data-ignore-self />
+          Don't count visits from this browser
+        </label>
+      </div>
+    </Container>
+  </section>
+</BaseLayout>
+
+<script>
+  import type { Summary } from "../lib/analytics";
+  import { IGNORE_KEY } from "../scripts/analytics";
+
+  const PASSWORD_KEY = "parameter:stats-password";
+  const $ = <T extends Element = HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+  const session = {
+    get: () => {
+      try {
+        return sessionStorage.getItem(PASSWORD_KEY);
+      } catch {
+        return null;
+      }
+    },
+    set: (v: string | null) => {
+      try {
+        if (v) sessionStorage.setItem(PASSWORD_KEY, v);
+        else sessionStorage.removeItem(PASSWORD_KEY);
+      } catch {
+        // Private mode: the password just won't survive a reload.
+      }
+    },
+  };
+
+  const login = $<HTMLFormElement>("[data-login]");
+  const loginError = $("[data-login-error]");
+  const dashboard = $("[data-dashboard]");
+  const controls = $("[data-controls]");
+  const range = $<HTMLSelectElement>("[data-range]");
+  const ignoreSelf = $<HTMLInputElement>("[data-ignore-self]");
+
+  const shortDay = (day: string) =>
+    new Date(`${day}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  const longDay = (day: string) =>
+    new Date(`${day}T12:00:00Z`).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+  const fmt = (n: number) => n.toLocaleString("en-US");
+
+  function cell(text: string, className = "") {
+    const td = document.createElement("td");
+    td.className = `border-t border-line py-2 ${className}`;
+    td.textContent = text;
+    return td;
+  }
+
+  function fillRows(tbody: Element, rows: string[][], emptyText: string) {
+    if (rows.length === 0) {
+      const tr = document.createElement("tr");
+      tr.append(cell(emptyText, "text-subtle"));
+      (tr.firstElementChild as HTMLTableCellElement).colSpan = 4;
+      tbody.replaceChildren(tr);
+      return;
+    }
+    tbody.replaceChildren(
+      ...rows.map((row) => {
+        const tr = document.createElement("tr");
+        row.forEach((text, i) =>
+          tr.append(cell(text, i === 0 ? "pr-4 text-fg" : "text-right tabular-nums text-muted")),
+        );
+        return tr;
+      }),
+    );
+  }
+
+  const SVG = "http://www.w3.org/2000/svg";
+  const svgEl = (name: string, attrs: Record<string, string | number>) => {
+    const el = document.createElementNS(SVG, name);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
+    return el;
+  };
+
+  // Rounds the axis top up to 1, 2, or 5 × 10^n so the three gridlines land on clean numbers.
+  function niceMax(max: number) {
+    if (max <= 3) return 3;
+    const step = 10 ** Math.floor(Math.log10(max / 3));
+    for (const m of [1, 2, 2.5, 5, 10]) if (m * step * 3 >= max) return m * step * 3;
+    return max;
+  }
+
+  function renderChart(daily: Summary["daily"]) {
+    const svg = $<SVGSVGElement>("[data-chart]");
+    const tooltip = $("[data-tooltip]");
+    const wrap = $("[data-chart-wrap]");
+    const width = Math.max(320, wrap.clientWidth);
+    const height = 224;
+    const pad = { top: 8, right: 4, bottom: 24, left: 36 };
+    const plotW = width - pad.left - pad.right;
+    const plotH = height - pad.top - pad.bottom;
+    const top = niceMax(Math.max(...daily.map((d) => d.pageviews), 0));
+    const slot = plotW / daily.length;
+    const gap = 2;
+    const barW = Math.max(1, Math.min(28, slot - gap));
+    const y = (v: number) => pad.top + plotH - (v / top) * plotH;
+
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    const total = daily.reduce((s, d) => s + d.pageviews, 0);
+    const peak = daily.reduce((best, d) => (d.pageviews > best.pageviews ? d : best), daily[0]);
+    svg.setAttribute(
+      "aria-label",
+      `Page views per day: ${fmt(total)} in total` +
+        (total ? `, peaking at ${fmt(peak.pageviews)} on ${longDay(peak.day)}.` : "."),
+    );
+    svg.replaceChildren();
+
+    // Recessive gridlines and y labels at 0, 1/3, 2/3, and the top.
+    for (let i = 0; i <= 3; i++) {
+      const value = (top / 3) * i;
+      svg.append(
+        svgEl("line", {
+          x1: pad.left,
+          x2: width - pad.right,
+          y1: y(value),
+          y2: y(value),
+          stroke: "var(--color-line)",
+          "stroke-width": 1,
+          "stroke-dasharray": i === 0 ? "" : "2 4",
+        }),
+      );
+      const label = svgEl("text", {
+        x: pad.left - 8,
+        y: y(value) + 4,
+        "text-anchor": "end",
+        "font-size": 11,
+        fill: "var(--color-subtle)",
+      });
+      label.textContent = fmt(Math.round(value));
+      svg.append(label);
+    }
+
+    daily.forEach((d, i) => {
+      const cx = pad.left + slot * i + slot / 2;
+      if (d.pageviews > 0) {
+        // Bars sit on the baseline with a 4px rounded top.
+        const x = cx - barW / 2;
+        const yTop = y(d.pageviews);
+        const r = Math.min(4, barW / 2, pad.top + plotH - yTop);
+        const base = pad.top + plotH;
+        svg.append(
+          svgEl("path", {
+            d: `M${x},${base} V${yTop + r} Q${x},${yTop} ${x + r},${yTop} H${x + barW - r} Q${x + barW},${yTop} ${x + barW},${yTop + r} V${base} Z`,
+            fill: "var(--color-brand)",
+            "data-bar": d.day,
+          }),
+        );
+      }
+      // Hit target: the whole column, wider than the bar.
+      const hit = svgEl("rect", {
+        x: pad.left + slot * i,
+        y: pad.top,
+        width: slot,
+        height: plotH,
+        fill: "transparent",
+        "data-day": d.day,
+      });
+      hit.addEventListener("pointerenter", () => {
+        tooltip.replaceChildren();
+        const strong = document.createElement("strong");
+        strong.className = "block font-medium";
+        strong.textContent = longDay(d.day);
+        const value = document.createElement("span");
+        value.className = "text-muted";
+        value.textContent = `${fmt(d.pageviews)} page view${d.pageviews === 1 ? "" : "s"}`;
+        tooltip.append(strong, value);
+        const scale = wrap.clientWidth / width;
+        tooltip.style.left = `${cx * scale}px`;
+        tooltip.style.top = `${(Math.min(y(d.pageviews), pad.top + plotH) - 6) * (svg.clientHeight / height)}px`;
+        tooltip.classList.remove("hidden");
+      });
+      hit.addEventListener("pointerleave", () => tooltip.classList.add("hidden"));
+      svg.append(hit);
+    });
+
+    // First, middle, and last day on the x axis.
+    const labelled = [0, Math.floor((daily.length - 1) / 2), daily.length - 1].filter((v, i, a) => a.indexOf(v) === i);
+    for (const i of labelled) {
+      const anchor = i === 0 ? "start" : i === daily.length - 1 ? "end" : "middle";
+      const x = anchor === "start" ? pad.left : anchor === "end" ? width - pad.right : pad.left + slot * i + slot / 2;
+      const label = svgEl("text", {
+        x,
+        y: height - 6,
+        "text-anchor": anchor,
+        "font-size": 11,
+        fill: "var(--color-subtle)",
+      });
+      label.textContent = shortDay(daily[i].day);
+      svg.append(label);
+    }
+  }
+
+  let current: Summary | null = null;
+
+  function render(summary: Summary) {
+    current = summary;
+    for (const [key, value] of Object.entries(summary.totals)) $(`[data-total="${key}"]`).textContent = fmt(value);
+    $("[data-truncated]").classList.toggle("hidden", !summary.truncated);
+    $("[data-range-label]").textContent = `${shortDay(summary.days[0])} – ${shortDay(summary.days.at(-1)!)}`;
+
+    fillRows(
+      $("[data-companies]"),
+      summary.companies.map((c) => [
+        c.company,
+        fmt(c.demoOpens),
+        fmt(c.demoRuns),
+        new Date(c.last).toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          timeZone: "America/Chicago",
+        }),
+      ]),
+      "No demo links opened yet.",
+    );
+    fillRows(
+      $("[data-daily-table]"),
+      summary.daily.map((d) => [longDay(d.day), fmt(d.pageviews)]),
+      "No days in range.",
+    );
+    for (const key of ["topPages", "topReferrers", "callsByPage"] as const) {
+      fillRows(
+        $(`[data-list="${key}"]`),
+        summary[key].map((r) => [r.key, fmt(r.count)]),
+        key === "callsByPage" ? "No call requests yet." : "No visits yet.",
+      );
+    }
+    renderChart(summary.daily);
+  }
+
+  async function load(password: string): Promise<boolean> {
+    loginError.classList.add("hidden");
+    let res: Response;
+    try {
+      res = await fetch(`/api/stats?days=${range.value}`, { headers: { Authorization: `Bearer ${password}` } });
+    } catch {
+      showError("Couldn't reach the stats service. Check your connection and try again.");
+      return false;
+    }
+    const body = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (res.status === 401) session.set(null);
+      showError(body?.error ?? `Something went wrong (${res.status}).`);
+      return false;
+    }
+    session.set(password);
+    login.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    controls.classList.replace("hidden", "flex");
+    render(body as Summary);
+    return true;
+  }
+
+  function showError(message: string) {
+    login.classList.remove("hidden");
+    dashboard.classList.add("hidden");
+    controls.classList.replace("flex", "hidden");
+    loginError.textContent = message;
+    loginError.classList.remove("hidden");
+  }
+
+  login.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = $<HTMLInputElement>("[data-password]");
+    if (await load(input.value)) {
+      input.value = "";
+      // The first sign-in on a browser stops it counting Joshua's own visits.
+      try {
+        if (localStorage.getItem(IGNORE_KEY) === null) localStorage.setItem(IGNORE_KEY, "1");
+      } catch {
+        // Storage blocked: nothing to remember.
+      }
+      syncIgnore();
+    }
+  });
+
+  const reload = () => {
+    const password = session.get();
+    if (password) void load(password);
+  };
+  range.addEventListener("change", reload);
+  $("[data-refresh]").addEventListener("click", reload);
+  $("[data-signout]").addEventListener("click", () => {
+    session.set(null);
+    dashboard.classList.add("hidden");
+    controls.classList.replace("flex", "hidden");
+    login.classList.remove("hidden");
+  });
+
+  function syncIgnore() {
+    try {
+      ignoreSelf.checked = localStorage.getItem(IGNORE_KEY) === "1";
+    } catch {
+      ignoreSelf.disabled = true;
+    }
+  }
+  ignoreSelf.addEventListener("change", () => {
+    try {
+      localStorage.setItem(IGNORE_KEY, ignoreSelf.checked ? "1" : "0");
+    } catch {
+      // Storage blocked.
+    }
+  });
+
+  let resizeTimer = 0;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => current && renderChart(current.daily), 150);
+  });
+
+  syncIgnore();
+  reload();
+</script>
