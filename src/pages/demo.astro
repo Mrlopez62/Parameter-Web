@@ -208,7 +208,15 @@ const label = "mb-2 block text-sm text-muted";
 </BaseLayout>
 
 <script>
-  import { acknowledgment, followUpPlan, parseLead, triageByRules, type Triage } from "../lib/lead-triage";
+  import {
+    acknowledgment,
+    DEFAULT_COMPANY,
+    followUpPlan,
+    parseLead,
+    triageByRules,
+    type Triage,
+  } from "../lib/lead-triage";
+  import { track } from "../scripts/analytics";
 
   const samples = JSON.parse(document.querySelector("[data-samples]")?.textContent ?? "null");
   const form = document.querySelector<HTMLFormElement>("[data-demo-form]")!;
@@ -310,5 +318,6 @@ const label = "mb-2 block text-sm text-muted";
 
     button.disabled = false;
     button.textContent = "Send another";
+    track("demo_run", { company: lead.company === DEFAULT_COMPANY ? undefined : lead.company });
   });
 </script>
