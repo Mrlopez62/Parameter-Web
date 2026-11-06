@@ -109,7 +109,7 @@ test.describe("other pages", () => {
 });
 
 test.describe("accessibility (axe, WCAG 2.1 AA)", () => {
-  for (const path of ["/", "/privacy/", "/demo/", "/roofing/", "/this-page-does-not-exist"]) {
+  for (const path of ["/", "/privacy/", "/demo/", "/roofing/", "/stats/", "/this-page-does-not-exist"]) {
     test(`${path} has no detectable violations`, async ({ page }) => {
       // Reduced motion renders every animated element in its final state.
       await page.emulateMedia({ reducedMotion: "reduce" });

@@ -9,9 +9,11 @@ interface Props {
   description?: string;
   /** Keep this page out of search results (e.g. the 404 page). */
   noindex?: boolean;
+  /** Count page views for this page (off for the private stats page). */
+  analytics?: boolean;
 }
 
-const { title, description = site.description, noindex = false } = Astro.props;
+const { title, description = site.description, noindex = false, analytics = true } = Astro.props;
 const pageTitle = title ? `${title} | ${site.name}` : `${site.name} | Practical automation for small businesses`;
 const canonical = new URL(Astro.url.pathname, site.url);
 const ogImage = new URL("/og.png", site.url);
@@ -75,6 +77,11 @@ const organization = {
     </main>
     <Footer />
 
+    {analytics && <div hidden data-track-pageview />}
+    <script>
+      import { track } from "../scripts/analytics";
+      if (document.querySelector("[data-track-pageview]")) track("pageview");
+    </script>
     <script>
       const reveal = new IntersectionObserver(
         (entries) => {

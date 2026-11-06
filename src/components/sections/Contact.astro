@@ -198,6 +198,7 @@ const label = "mb-2 block text-sm text-muted";
 
 <script>
   import { googleCalendarUrl, icsFile, outlookCalendarUrl, type CalendarEvent } from "../../lib/calendar";
+  import { track } from "../../scripts/analytics";
   import { attachEmailVerification } from "../../scripts/email-verify";
   import {
     BUSINESS_TZ,
@@ -271,6 +272,7 @@ const label = "mb-2 block text-sm text-muted";
       }
 
       showSuccess({ start, end, when });
+      track("call_requested");
     });
 
     function showSuccess({ start, end, when }: { start: Date; end: Date; when: string }) {
